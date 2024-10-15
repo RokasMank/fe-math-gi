@@ -9,8 +9,23 @@ import {
   VStack,
   Button,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
+import api from "../../apiClient";
 
 function LoginScreen() {
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    if (true) {
+      // login logic
+      //const response = await api.post("/login", {});
+
+      navigate("/main");
+    } else {
+      //bad
+    }
+  };
+
   return (
     <Container
       height={"100vh"}
@@ -39,14 +54,12 @@ function LoginScreen() {
                 <Input type="email" placeholder="Įveskite el. paštą" />
               </FormControl>
 
-              {/* Code Field */}
               <FormControl id="code" isRequired>
                 <FormLabel>Kodas</FormLabel>
                 <Input type="text" placeholder="Įveskite kodą" />
               </FormControl>
 
-              {/* Submit Button */}
-              <Button colorScheme="blue" w="full">
+              <Button colorScheme="blue" w="full" onClick={() => handleLogin()}>
                 Prisijungti
               </Button>
             </VStack>
