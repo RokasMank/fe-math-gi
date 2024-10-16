@@ -5,13 +5,19 @@ import {
   Button,
   CardHeader,
   Box,
+  HStack,
+  Checkbox,
+  CheckboxGroup,
+  Stack,
 } from "@chakra-ui/react";
 
 import { useState } from "react";
+import { ConfirmEnd } from "./Components/ConfirmEnd";
 
 const StudentMain = () => {
   const [testStarted, setTestStarted] = useState(false);
   const [testFinished, setTestFinished] = useState(false);
+  const [openTestFinish, setOpenTestFinish] = useState(false);
 
   const handleTestStart = () => {
     setTestStarted(true);
@@ -25,7 +31,7 @@ const StudentMain = () => {
     // api call to finish test
   };
   return (
-    <Container
+    <Box
       height={"100vh"}
       display="flex"
       justifyContent="center"
@@ -41,25 +47,59 @@ const StudentMain = () => {
               <Box>Testo trukmė: </Box>
             </CardBody>
 
-            <Button onClick={() => handleTestStart()}>Pradėti</Button>
+            <Button colorScheme="green" onClick={() => handleTestStart()}>
+              Pradėti
+            </Button>
           </Card>
         </Container>
       ) : (
-        <Container>
-          <Card>
-            <CardHeader>Klausimas</CardHeader>
+        <Box>
+          <Box>
+            <Card>
+              <CardHeader>
+                <Box width={"80%"}>
+                  Markas turi 28 Eur, o Tauras 12 Eur daugiau. Ar užteks
+                  broliams turimų pinigų pavaizduotam kamuoliui nusipirkti?
+                  Atsakymą paaiškink
+                </Box>
+                <Box float={"right"}>[points]</Box>
+              </CardHeader>
 
-            <CardBody>
-              <Box>SMth:</Box>
-              <Box>Testo trukmė: </Box>
-            </CardBody>
-
-            <Button onClick={() => handleTestStart()}>Pradėti</Button>
-          </Card>
-          <Button onClick={() => handleTestFinish()}>Baigti</Button>
-        </Container>
+              <CardBody>
+                <Box>
+                  <CheckboxGroup colorScheme="blue">
+                    <Stack spacing={5} direction="column">
+                      <Checkbox value="option1">Option 1</Checkbox>
+                      <Checkbox value="option2">Option 2</Checkbox>
+                      <Checkbox value="option3">Option 3</Checkbox>
+                      <Checkbox value="option4">Option 4</Checkbox>
+                    </Stack>
+                  </CheckboxGroup>
+                </Box>
+                <Box marginTop={"20px"}>Place for img</Box>
+              </CardBody>
+            </Card>
+          </Box>
+          <Box margin={"15px"}>
+            <HStack>
+              <Box>ce bus kleusimai</Box>
+              <Box>
+                <Button colorScheme="yellow">Kitas klausimas</Button>
+              </Box>
+            </HStack>
+          </Box>
+          <Box>
+            <Button colorScheme={"red"} onClick={() => setOpenTestFinish(true)}>
+              Baigti
+            </Button>
+          </Box>
+        </Box>
       )}
-    </Container>
+      <ConfirmEnd
+        open={openTestFinish}
+        onClose={() => setOpenTestFinish(false)}
+      />
+    </Box>
   );
 };
 
