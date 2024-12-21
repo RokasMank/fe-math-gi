@@ -30,13 +30,14 @@ function AdminLoginScreen() {
       });
 
       // Extract the token from the response
-      const { token } = response.data;
+      console.log(response);
+      const token = response.data;
 
       // Save token to localStorage
       localStorage.setItem("token", token);
-
+      console.log(localStorage.getItem("token"));
       // Navigate to the main admin page
-      navigate("/main");
+      navigate("/admin/landing");
     } catch (err) {
       // Handle login errors
       console.error(

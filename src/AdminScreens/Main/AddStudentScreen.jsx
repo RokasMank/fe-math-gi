@@ -9,18 +9,33 @@ import {
   VStack,
   Button,
   useToast,
+  Select,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import api from "../../apiClient";
 
 function AddStudentScreen() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [gender, setGender] = useState("");
+  const [studentClass, setStudentClass] = useState("");
   const toast = useToast();
 
   const handleAddStudent = async () => {
+    const parsedClass = parseInt(studentClass);
+    if (isNaN(parsedClass) || parsedClass < 1 || parsedClass > 4) {
+      toast({
+        title: "Invalid Class.",
+        description: "Class must be a number between 1 and 4.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    console.log(localStorage.getItem("token"));
     try {
-      await api.post("/students", { name, email });
+      await api.post("/Student/create", { code, gender, class: parsedClass });
       toast({
         title: "Student Added.",
         description: "The student has been successfully added.",
@@ -28,8 +43,9 @@ function AddStudentScreen() {
         duration: 5000,
         isClosable: true,
       });
-      setName("");
-      setEmail("");
+      setCode("");
+      setGender("");
+      setStudentClass("");
     } catch (error) {
       toast({
         title: "Error Adding Student.",
@@ -54,22 +70,33 @@ function AddStudentScreen() {
             <Heading size="lg" mb={4}>
               Add Student
             </Heading>
-            <FormControl id="name" isRequired>
-              <FormLabel>Name</FormLabel>
+            <FormControl id="code" isRequired>
+              <FormLabel>Code</FormLabel>
               <Input
                 type="text"
-                placeholder="Enter name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter student code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
               />
             </FormControl>
-            <FormControl id="email" isRequired>
-              <FormLabel>Email</FormLabel>
+            <FormControl id="gender" isRequired>
+              <FormLabel>Gender</FormLabel>
+              <Select
+                placeholder="Select gender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </Select>
+            </FormControl>
+            <FormControl id="class" isRequired>
+              <FormLabel>Class</FormLabel>
               <Input
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="number"
+                placeholder="Enter class (1-4)"
+                value={studentClass}
+                onChange={(e) => setStudentClass(e.target.value)}
               />
             </FormControl>
             <Button colorScheme="teal" onClick={handleAddStudent}>
