@@ -13,15 +13,17 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import api from "../../apiClient";
+import { useNavigate } from "react-router-dom";
 
 function CreateTestScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const toast = useToast();
+  const navigate = useNavigate();
 
   const handleCreateTest = async () => {
     try {
-      await api.post("/tests", { title, description });
+      const response = await api.post("/Test", { title, description });
       toast({
         title: "Test Created.",
         description: "The test has been successfully created.",
@@ -31,6 +33,8 @@ function CreateTestScreen() {
       });
       setTitle("");
       setDescription("");
+      const testId = response.data.id;
+      navigate("add-questions", { state: { title, description, testId } }); // Pass state
     } catch (error) {
       toast({
         title: "Error Creating Test.",
@@ -71,6 +75,10 @@ function CreateTestScreen() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </FormControl>
+            <FormControl id="description">
+              <FormLabel>Time</FormLabel>
+              <Input disabled placeholder="45 min" />
             </FormControl>
             <Button colorScheme="purple" onClick={handleCreateTest}>
               Create Test

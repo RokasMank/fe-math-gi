@@ -47,13 +47,25 @@ function AddStudentScreen() {
       setGender("");
       setStudentClass("");
     } catch (error) {
-      toast({
-        title: "Error Adding Student.",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      if (error.status === 409) {
+        toast({
+          title: "Error Adding Student.",
+          description:
+            error.response?.data?.message ||
+            "Student with this code already exists",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Error Adding Student.",
+          description: error.response?.data?.message || "Something went wrong.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
   };
 

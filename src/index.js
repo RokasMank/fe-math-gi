@@ -13,6 +13,7 @@ import LandingScreen from "./AdminScreens/LandingScreen/LandingScreen.jsx";
 import AdminCreateScreen from "./AdminScreens/Main/AdminCreateScreen.jsx";
 import AddStudentScreen from "./AdminScreens/Main/AddStudentScreen.jsx";
 import CreateTestScreen from "./AdminScreens/Main/CreateTestScreen.jsx";
+import AddTestTestQuestionsScreen from "./AdminScreens/Main/AddTestQuestionsScreen.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path: "admin/create-test",
     element: <CreateTestScreen />,
+  },
+  {
+    path: "admin/create-test/add-questions",
+    element: <AddTestTestQuestionsScreen />,
   },
   {
     path: "main",
