@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import api from "../../apiClient";
 
-function AddStudentScreen() {
+function CreateStudentScreen() {
   const [code, setCode] = useState("");
   const [gender, setGender] = useState("");
   const [studentClass, setStudentClass] = useState("");
@@ -121,4 +121,4 @@ function AddStudentScreen() {
   );
 }
 
-export default AddStudentScreen;
+export default CreateStudentScreen;

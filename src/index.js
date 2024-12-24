@@ -11,9 +11,12 @@ import ErrorPage from "./Common/ErrorPage.jsx";
 import StudentMain from "./StudentScreens/MainScreen/StudentMain.jsx";
 import LandingScreen from "./AdminScreens/LandingScreen/LandingScreen.jsx";
 import AdminCreateScreen from "./AdminScreens/Main/AdminCreateScreen.jsx";
-import AddStudentScreen from "./AdminScreens/Main/AddStudentScreen.jsx";
+import CreateStudentScreen from "./AdminScreens/Main/CreateStudentScreen.jsx";
 import CreateTestScreen from "./AdminScreens/Main/CreateTestScreen.jsx";
 import AddTestTestQuestionsScreen from "./AdminScreens/Main/AddTestQuestionsScreen.jsx";
+import AllTestsScreen from "./AdminScreens/Main/AllTestsScreen.jsx";
+import CreateTestAssignmentScreen from "./AdminScreens/Main/CreateTestAssignmentScreen.jsx";
+import TestDetailsScreen from "./AdminScreens/Main/TestDetailsScreen.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -37,7 +40,7 @@ const router = createBrowserRouter([
   },
   {
     path: "admin/add-student",
-    element: <AddStudentScreen />,
+    element: <CreateStudentScreen />,
   },
   {
     path: "admin/create-test",
@@ -46,6 +49,18 @@ const router = createBrowserRouter([
   {
     path: "admin/create-test/add-questions",
     element: <AddTestTestQuestionsScreen />,
+  },
+  {
+    path: "admin/all-tests",
+    element: <AllTestsScreen />,
+  },
+  {
+    path: "admin/test/:id",
+    element: <TestDetailsScreen />,
+  },
+  {
+    path: "admin/create-assignment",
+    element: <CreateTestAssignmentScreen />,
   },
   {
     path: "main",
