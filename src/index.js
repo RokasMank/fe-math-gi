@@ -17,6 +17,8 @@ import AddTestTestQuestionsScreen from "./AdminScreens/Main/AddTestQuestionsScre
 import AllTestsScreen from "./AdminScreens/Main/AllTestsScreen.jsx";
 import CreateTestAssignmentScreen from "./AdminScreens/Main/CreateTestAssignmentScreen.jsx";
 import TestDetailsScreen from "./AdminScreens/Main/TestDetailsScreen.jsx";
+import ViewTestAssignmentsScreen from "./AdminScreens/Main/ViewTestAssignments.jsx";
+import ViewAssignmentDetailsScreen from "./AdminScreens/Main/ViewAssignmentDetailsScreen.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -61,6 +63,14 @@ const router = createBrowserRouter([
   {
     path: "admin/create-assignment",
     element: <CreateTestAssignmentScreen />,
+  },
+  {
+    path: "admin/view-assignments",
+    element: <ViewTestAssignmentsScreen />,
+  },
+  {
+    path: "admin/view-assignment/:id",
+    element: <ViewAssignmentDetailsScreen />,
   },
   {
     path: "main",

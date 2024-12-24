@@ -56,6 +56,13 @@ function LandingScreen() {
         >
           Create test assignment
         </Button>
+        <Button
+          colorScheme="yellow"
+          size="lg"
+          onClick={() => navigate("/admin/view-assignments")}
+        >
+          View test assignments
+        </Button>
       </VStack>
     </Container>
   );

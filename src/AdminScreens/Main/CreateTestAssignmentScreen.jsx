@@ -6,6 +6,7 @@ import {
   Button,
   VStack,
   Input,
+  Textarea,
   HStack,
   Text,
   useToast,
@@ -14,6 +15,8 @@ import api from "../../apiClient";
 
 const CreateTestAssignmentScreen = () => {
   const [tests, setTests] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedTest, setSelectedTest] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [assignmentId, setAssignmentId] = useState(null); // Store the created assignment ID
@@ -41,11 +44,11 @@ const CreateTestAssignmentScreen = () => {
     fetchPublishedTests();
   }, [toast]);
 
-  const handleCreateAssignment = async () => {
-    if (!selectedTest || !selectedClass) {
+  const handleCreateOrUpdateAssignment = async () => {
+    if (!title.trim() || !selectedTest || !selectedClass) {
       toast({
         title: "Error",
-        description: "Please select a test and a class.",
+        description: "Please fill out all required fields.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -54,27 +57,49 @@ const CreateTestAssignmentScreen = () => {
     }
 
     try {
-      const response = await api.post("/TestAssignment/create", {
-        testId: selectedTest,
-        class: selectedClass,
-      });
+      let response;
+      if (assignmentId) {
+        // Update assignment
+        response = await api.put(`/TestAssignment/update/${assignmentId}`, {
+          testId: selectedTest,
+          class: selectedClass,
+          title,
+          description,
+        });
 
-      const { assignmentId } = response.data;
-      setAssignmentId(assignmentId); // Store assignment ID
+        toast({
+          title: "Success",
+          description: "Assignment updated successfully.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        // Create assignment
+        response = await api.post("/TestAssignment/create", {
+          testId: selectedTest,
+          class: selectedClass,
+          title,
+          description,
+        });
 
-      toast({
-        title: "Success",
-        description:
-          "Assignment created successfully. You can now add students.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+        const { assignmentId } = response.data;
+        setAssignmentId(assignmentId); // Store assignment ID
+
+        toast({
+          title: "Success",
+          description:
+            "Assignment created successfully. You can now add students.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     } catch (error) {
-      console.error("Error creating assignment:", error);
+      console.error("Error creating/updating assignment:", error);
       toast({
         title: "Error",
-        description: "Failed to create assignment.",
+        description: "Failed to create or update assignment.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -96,12 +121,29 @@ const CreateTestAssignmentScreen = () => {
 
     try {
       // Call the backend to add the student
-      await api.post(`/TestAssignment/${assignmentId}/add-student`, {
-        studentCode,
-      });
+      const response = await api.post(
+        `/TestAssignment/${assignmentId}/add-student`,
+        {
+          studentCode,
+        }
+      );
+
+      const { code, studentClass, gender } = response.data; // Extract student details
+
+      // Check if the student is already in the local list
+      if (students.some((student) => student.code === code)) {
+        toast({
+          title: "Error",
+          description: "Student is already added.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
 
       // Add the student to the local list
-      setStudents([...students, studentCode]);
+      setStudents([...students, { code, studentClass, gender }]);
       setStudentCode(""); // Clear the input field
 
       toast({
@@ -123,12 +165,83 @@ const CreateTestAssignmentScreen = () => {
     }
   };
 
+  const handlePublishAssignment = async () => {
+    try {
+      await api.post(`/TestAssignment/${assignmentId}/publish`);
+      toast({
+        title: "Success",
+        description: "Assignment published successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error publishing assignment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to publish assignment.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleRemoveStudent = async (studentCode) => {
+    try {
+      // Call the backend to remove the student
+      await api.delete(
+        `/TestAssignment/${assignmentId}/remove-student/${studentCode}`
+      );
+
+      // Remove the student from the local list
+      setStudents(students.filter((student) => student.code !== studentCode));
+
+      toast({
+        title: "Success",
+        description: `Student ${studentCode} removed from the assignment.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error removing student:", error);
+      toast({
+        title: "Error",
+        description: `Failed to remove student ${studentCode}.`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={6}>
-        Create Assignment
+        {assignmentId ? "Update Assignment" : "Create Assignment"}
       </Heading>
       <VStack spacing={4} align="start">
+        {/* Title */}
+        <Box width="100%">
+          <Heading size="sm">Assignment Title:</Heading>
+          <Input
+            placeholder="Enter assignment title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </Box>
+
+        {/* Description */}
+        <Box width="100%">
+          <Heading size="sm">Assignment Description:</Heading>
+          <Textarea
+            placeholder="Enter assignment description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Box>
+
         {/* Select Test */}
         <Box width="100%">
           <Heading size="sm">Select Test:</Heading>
@@ -160,9 +273,9 @@ const CreateTestAssignmentScreen = () => {
           </Select>
         </Box>
 
-        {/* Create Assignment Button */}
-        <Button colorScheme="blue" onClick={handleCreateAssignment}>
-          Create Assignment
+        {/* Create/Update Assignment Button */}
+        <Button colorScheme="blue" onClick={handleCreateOrUpdateAssignment}>
+          {assignmentId ? "Update Assignment" : "Create Assignment"}
         </Button>
 
         {/* Add Students Section */}
@@ -183,10 +296,34 @@ const CreateTestAssignmentScreen = () => {
             </HStack>
             {/* Display Added Students */}
             <VStack align="start" spacing={2} marginTop={4}>
-              {students.map((code, index) => (
-                <Text key={index}>- {code}</Text>
+              {students.map(({ code, studentClass, gender }, index) => (
+                <HStack key={index} width="100%" justifyContent="space-between">
+                  <Box>
+                    <Text>- {code}</Text>
+                    <Text>Class: {studentClass}</Text>
+                    <Text>Gender: {gender}</Text>
+                  </Box>
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => handleRemoveStudent(code)}
+                  >
+                    Remove
+                  </Button>
+                </HStack>
               ))}
             </VStack>
+
+            {/* Publish Assignment Button */}
+            {students.length > 0 && (
+              <Button
+                colorScheme="green"
+                marginTop={4}
+                onClick={handlePublishAssignment}
+              >
+                Publish Assignment
+              </Button>
+            )}
           </Box>
         )}
       </VStack>
