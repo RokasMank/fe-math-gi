@@ -30,12 +30,11 @@ function AdminLoginScreen() {
       });
 
       // Extract the token from the response
-      console.log(response);
       const token = response.data;
 
       // Save token to localStorage
       localStorage.setItem("token", token);
-      console.log(localStorage.getItem("token"));
+      localStorage.setItem("role", "admin");
       // Navigate to the main admin page
       navigate("/admin/landing");
     } catch (err) {

@@ -94,6 +94,29 @@ const ViewAssignmentDetailsScreen = () => {
     }
   };
 
+  const handleUnpublishAssignment = async () => {
+    try {
+      await api.post(`/TestAssignment/${id}/unpublish`);
+      toast({
+        title: "Success",
+        description: "Assignment unpublished successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      navigate("/admin/view-assignments");
+    } catch (error) {
+      console.error("Error unpublishing assignment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to unpublish assignment.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -125,13 +148,66 @@ const ViewAssignmentDetailsScreen = () => {
       </Heading>
       <VStack align="start" spacing={2}>
         <Text>Class: {assignment.class}</Text>
-        <Text>Status: {assignment.published ? "Published" : "Draft"}</Text>
+        <Text>Status: {assignment.isPublished ? "Published" : "Draft"}</Text>
         <Text>Test: {assignment.test.title}</Text>
         <Text>Test Description: {assignment.test.description}</Text>
       </VStack>
       <Divider marginTop={6} marginBottom={4} />
+      <Heading size="md" marginBottom={4}>
+        Assigned Students
+      </Heading>
+      <VStack align="start" spacing={2}>
+        {assignment.students.length > 0 ? (
+          assignment.students.map((student, index) => (
+            <Box key={index} borderWidth={1} borderRadius="md" padding={3}>
+              <Text>Code: {student.code}</Text>
+              <Text>Class: {student.studentClass}</Text>
+              <Text>Gender: {student.gender}</Text>
+            </Box>
+          ))
+        ) : (
+          <Text>No students assigned to this assignment.</Text>
+        )}
+      </VStack>
+      <Divider marginTop={6} marginBottom={4} />
+      <Heading size="md" marginBottom={4}>
+        Questions
+      </Heading>
+      <VStack align="start" spacing={2}>
+        {assignment.test.questions.length > 0 ? (
+          assignment.test.questions.map((question, index) => (
+            <Box key={index} borderWidth={1} borderRadius="md" padding={3}>
+              <Text fontWeight="bold">
+                {index + 1}. {question.text}
+              </Text>
+              <Text>Points: {question.points}</Text>
+              <Text>Type: {question.questionType}</Text>
+              {question.options.length > 0 && (
+                <>
+                  <Text>Options:</Text>
+                  <VStack align="start">
+                    {question.options.map((option, optIndex) => (
+                      <Text key={optIndex}>
+                        - {option}{" "}
+                        {question.correctAnswers.includes(option) && (
+                          <Text as="span" color="green">
+                            (Correct)
+                          </Text>
+                        )}
+                      </Text>
+                    ))}
+                  </VStack>
+                </>
+              )}
+            </Box>
+          ))
+        ) : (
+          <Text>No questions available for this test.</Text>
+        )}
+      </VStack>
+      <Divider marginTop={6} marginBottom={4} />
       <HStack spacing={4}>
-        {!assignment.published && (
+        {!assignment.isPublished ? (
           <>
             <Button colorScheme="green" onClick={handlePublishAssignment}>
               Publish Assignment
@@ -140,6 +216,10 @@ const ViewAssignmentDetailsScreen = () => {
               Delete Assignment
             </Button>
           </>
+        ) : (
+          <Button colorScheme="yellow" onClick={handleUnpublishAssignment}>
+            Unpublish Assignment
+          </Button>
         )}
         <Button
           colorScheme="blue"

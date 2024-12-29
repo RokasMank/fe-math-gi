@@ -1,104 +1,99 @@
+import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Card,
-  CardBody,
-  Button,
-  CardHeader,
   Box,
-  HStack,
-  Checkbox,
-  CheckboxGroup,
-  Stack,
+  Heading,
+  VStack,
+  Button,
+  Spinner,
+  Text,
+  useToast,
 } from "@chakra-ui/react";
-
-import { useState } from "react";
-import { ConfirmEnd } from "./Components/ConfirmEnd";
+import { useNavigate } from "react-router-dom";
+import api from "../../apiClient";
 
 const StudentMain = () => {
-  const [testStarted, setTestStarted] = useState(false);
-  const [testFinished, setTestFinished] = useState(false);
-  const [openTestFinish, setOpenTestFinish] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
+  const navigate = useNavigate();
 
-  const handleTestStart = () => {
-    setTestStarted(true);
+  useEffect(() => {
+    const fetchTestSessions = async () => {
+      try {
+        // Make an API call to get student test sessions
+        const response = await api.post(
+          `/Student/getSessions/${localStorage.getItem("studentId")}`
+        );
+        setSessions(response.data);
+      } catch (error) {
+        console.error("Error fetching test sessions:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch test sessions.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    //api call to start session {userToken} and {currentTime}
-  };
-  const handleTestFinish = () => {
-    setTestFinished(true);
-    setTestStarted(false);
+    fetchTestSessions();
+  }, [toast, navigate]);
 
-    // api call to finish test
-  };
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <Spinner size="xl" />
+      </Box>
+    );
+  }
+
+  if (sessions.length === 0) {
+    return (
+      <Box padding={6}>
+        <Heading size="lg" marginBottom={4}>
+          No Available Tests
+        </Heading>
+        <Text>No test sessions are currently available for you.</Text>
+      </Box>
+    );
+  }
+
   return (
-    <Box
-      height={"100vh"}
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-    >
-      {!testStarted ? (
-        <Container>
-          <Card>
-            <CardHeader>Testo pavadinimas</CardHeader>
-
-            <CardBody>
-              <Box>Testas atidaromas:</Box>
-              <Box>Testo trukmė: </Box>
-            </CardBody>
-
-            <Button colorScheme="green" onClick={() => handleTestStart()}>
-              Pradėti
-            </Button>
-          </Card>
-        </Container>
-      ) : (
-        <Box>
-          <Box>
-            <Card>
-              <CardHeader>
-                <Box width={"80%"}>
-                  Markas turi 28 Eur, o Tauras 12 Eur daugiau. Ar užteks
-                  broliams turimų pinigų pavaizduotam kamuoliui nusipirkti?
-                  Atsakymą paaiškink
-                </Box>
-                <Box float={"right"}>[points]</Box>
-              </CardHeader>
-
-              <CardBody>
-                <Box>
-                  <CheckboxGroup colorScheme="blue">
-                    <Stack spacing={5} direction="column">
-                      <Checkbox value="option1">Option 1</Checkbox>
-                      <Checkbox value="option2">Option 2</Checkbox>
-                      <Checkbox value="option3">Option 3</Checkbox>
-                      <Checkbox value="option4">Option 4</Checkbox>
-                    </Stack>
-                  </CheckboxGroup>
-                </Box>
-                <Box marginTop={"20px"}>Place for img</Box>
-              </CardBody>
-            </Card>
-          </Box>
-          <Box margin={"15px"}>
-            <HStack>
-              <Box>ce bus kleusimai</Box>
-              <Box>
-                <Button colorScheme="yellow">Kitas klausimas</Button>
-              </Box>
-            </HStack>
-          </Box>
-          <Box>
-            <Button colorScheme={"red"} onClick={() => setOpenTestFinish(true)}>
-              Baigti
+    <Box padding={6}>
+      <Heading size="lg" marginBottom={6}>
+        Your Test Sessions
+      </Heading>
+      <VStack spacing={4} align="start">
+        {sessions.map((session) => (
+          <Box
+            key={session.id}
+            borderWidth={1}
+            borderRadius="md"
+            padding={4}
+            width="100%"
+          >
+            <Text fontWeight="bold">{session.test.title}</Text>
+            <Text>Description: {session.test.description}</Text>
+            <Text>Status: {session.sessionStatus}</Text>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              marginTop={2}
+              onClick={() => navigate(`/test/${session.id}`)}
+            >
+              Pradėti testą
             </Button>
           </Box>
-        </Box>
-      )}
-      <ConfirmEnd
-        open={openTestFinish}
-        onClose={() => setOpenTestFinish(false)}
-      />
+        ))}
+      </VStack>
     </Box>
   );
 };

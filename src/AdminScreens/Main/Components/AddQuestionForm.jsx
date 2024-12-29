@@ -15,7 +15,7 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import api from "../../../apiClient";
 
-function AddQuestionForm({ testId, toast }) {
+function AddQuestionForm({ testId, toast, callback }) {
   const [text, setText] = useState("");
   const [points, setPoints] = useState("");
   const [questionType, setQuestionType] = useState("");
@@ -43,33 +43,12 @@ function AddQuestionForm({ testId, toast }) {
     setOptions(updatedOptions);
   };
 
-  const toggleCorrectAnswer = (option) => {
-    if (correctAnswers.includes(option)) {
-      // If the option is already a correct answer, remove it
-      setCorrectAnswers(correctAnswers.filter((answer) => answer !== option));
-    } else {
-      // Add the option to correctAnswers
-      setCorrectAnswers([...correctAnswers, option]);
-    }
-  };
-
   const handleAddQuestion = async () => {
-    if (correctAnswers.length > options.length) {
-      toast({
-        title: "Validation Error",
-        description: "Correct answers cannot exceed total options.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
-
     try {
       const request = {
         text,
         points: parseInt(points),
-        questionType: questionType,
+        questionType,
         options,
         correctAnswers,
       };
@@ -82,12 +61,14 @@ function AddQuestionForm({ testId, toast }) {
         duration: 5000,
         isClosable: true,
       });
+
       // Reset form fields
       setText("");
       setPoints("");
       setQuestionType("");
       setOptions([]);
       setCorrectAnswers([]);
+      callback();
     } catch (error) {
       toast({
         title: "Error Adding Question.",
@@ -133,6 +114,20 @@ function AddQuestionForm({ testId, toast }) {
           </Select>
         </FormControl>
       </HStack>
+      {questionType === "OpenEnded" && (
+        <FormControl id="correctAnswers" isRequired>
+          <FormLabel>Correct Answer</FormLabel>
+          <Textarea
+            placeholder="Enter the correct answer (one per line)"
+            value={correctAnswers.join("\n")}
+            onChange={(e) =>
+              setCorrectAnswers(
+                e.target.value.split("\n").map((line) => line.trim())
+              )
+            }
+          />
+        </FormControl>
+      )}
       {(questionType === "MultipleChoice" ||
         questionType === "SingleChoice") && (
         <FormControl id="options" isRequired>
@@ -147,7 +142,13 @@ function AddQuestionForm({ testId, toast }) {
                 />
                 <Checkbox
                   isChecked={correctAnswers.includes(option)}
-                  onChange={() => toggleCorrectAnswer(option)}
+                  onChange={() =>
+                    setCorrectAnswers((prev) =>
+                      prev.includes(option)
+                        ? prev.filter((ans) => ans !== option)
+                        : [...prev, option]
+                    )
+                  }
                 >
                   Mark as Correct
                 </Checkbox>

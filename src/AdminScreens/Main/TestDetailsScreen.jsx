@@ -10,7 +10,7 @@ import {
   HStack,
   useToast,
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
 
 const TestDetailsScreen = () => {
@@ -18,6 +18,7 @@ const TestDetailsScreen = () => {
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const navigate = useNavigate();
 
   // Fetch test details
   useEffect(() => {
@@ -93,6 +94,10 @@ const TestDetailsScreen = () => {
     }
   };
 
+  const handleGoToTest = () => {
+    navigate(`/admin/create-test/add-questions/${id}`);
+  };
+
   if (loading) {
     return (
       <Box
@@ -123,9 +128,23 @@ const TestDetailsScreen = () => {
       </Text>
 
       {!test.published && (
-        <Button colorScheme="teal" marginBottom={6} onClick={handlePublishTest}>
-          Publish Test
-        </Button>
+        <>
+          <Button
+            colorScheme="teal"
+            marginBottom={6}
+            onClick={handlePublishTest}
+          >
+            Publish Test
+          </Button>
+
+          <Button
+            colorScheme="yellow"
+            marginBottom={6}
+            onClick={handleGoToTest}
+          >
+            Go to test
+          </Button>
+        </>
       )}
 
       <Divider marginBottom={4} />
@@ -148,7 +167,7 @@ const TestDetailsScreen = () => {
                     {index + 1}. {question.text}
                   </Text>
                   <Text>Points: {question.points}</Text>
-                  {question.options && (
+                  {question.options?.length > 0 ? (
                     <Box marginTop={2}>
                       <Text fontWeight="bold">Options:</Text>
                       <VStack align="start">
@@ -165,6 +184,15 @@ const TestDetailsScreen = () => {
                               </Text>
                             )}
                           </HStack>
+                        ))}
+                      </VStack>
+                    </Box>
+                  ) : (
+                    <Box marginTop={2}>
+                      <Text fontWeight="bold">Correct Answers:</Text>
+                      <VStack align="start">
+                        {question.correctAnswers.map((answer, idx) => (
+                          <Text key={idx}>- {answer}</Text>
                         ))}
                       </VStack>
                     </Box>

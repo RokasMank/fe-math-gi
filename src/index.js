@@ -4,7 +4,7 @@ import "./index.css";
 import LoginScreen from "./StudentScreens/LoginScreen/LoginScreen.jsx";
 import AdminLoginScreen from "./AdminScreens/LoginScreen/LoginScreen.jsx";
 import reportWebVitals from "./reportWebVitals";
-import { ChakraProvider } from "@chakra-ui/react";
+import { Box, ChakraProvider } from "@chakra-ui/react";
 import theme from "./theme.js";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./Common/ErrorPage.jsx";
@@ -19,6 +19,9 @@ import CreateTestAssignmentScreen from "./AdminScreens/Main/CreateTestAssignment
 import TestDetailsScreen from "./AdminScreens/Main/TestDetailsScreen.jsx";
 import ViewTestAssignmentsScreen from "./AdminScreens/Main/ViewTestAssignments.jsx";
 import ViewAssignmentDetailsScreen from "./AdminScreens/Main/ViewAssignmentDetailsScreen.jsx";
+import StudentTestPage from "./StudentScreens/MainScreen/StudentTestPage.jsx";
+import TestResultsPage from "./StudentScreens/MainScreen/TestResultsPage.jsx";
+import AppLayout from "./Common/AppLayoutDraft.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -49,7 +52,7 @@ const router = createBrowserRouter([
     element: <CreateTestScreen />,
   },
   {
-    path: "admin/create-test/add-questions",
+    path: "admin/create-test/add-questions/:testId",
     element: <AddTestTestQuestionsScreen />,
   },
   {
@@ -76,12 +79,22 @@ const router = createBrowserRouter([
     path: "main",
     element: <StudentMain />,
   },
+  {
+    path: "test/:id",
+    element: <StudentTestPage />,
+  },
+  {
+    path: "results/:id",
+    element: <TestResultsPage />,
+  },
 ]);
 
 root.render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
-      <RouterProvider router={router} />
+      <RouterProvider router={router}>
+        <AppLayout />
+      </RouterProvider>
     </ChakraProvider>
   </React.StrictMode>
 );

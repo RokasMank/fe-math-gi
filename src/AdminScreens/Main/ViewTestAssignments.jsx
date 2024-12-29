@@ -77,7 +77,7 @@ const ViewTestAssignmentsScreen = () => {
                 <Text>Description: {assignment.description}</Text>
                 <Text>Class: {assignment.class}</Text>
                 <Text>
-                  Status: {assignment.published ? "Published" : "Draft"}
+                  Status: {assignment.isPublished ? "Published" : "Draft"}
                 </Text>
               </Box>
               <Button

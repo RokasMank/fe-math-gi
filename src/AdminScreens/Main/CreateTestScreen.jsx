@@ -34,7 +34,7 @@ function CreateTestScreen() {
       setTitle("");
       setDescription("");
       const testId = response.data.id;
-      navigate("add-questions", { state: { title, description, testId } }); // Pass state
+      navigate(`add-questions/${testId}`);
     } catch (error) {
       toast({
         title: "Error Creating Test.",

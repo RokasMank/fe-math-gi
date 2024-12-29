@@ -8,21 +8,56 @@ import {
   Input,
   VStack,
   Button,
+  useToast,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import api from "../../apiClient";
 
 function LoginScreen() {
+  const [code, setCode] = useState(""); // State to capture the student code
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleLogin = async () => {
-    if (true) {
-      // login logic
-      //const response = await api.post("/login", {});
+    if (!code.trim()) {
+      toast({
+        title: "Error",
+        description: "Code cannot be empty.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
-      navigate("/main");
-    } else {
-      //bad
+    try {
+      // Call the backend login endpoint
+      const response = await api.post(`Student/login/${code}`);
+      const student = response.data;
+
+      // Save id to localStorage
+      localStorage.setItem("studentId", student.id);
+
+      // Navigate to the main screen with student data if needed
+      navigate("/main", { state: { student } });
+
+      toast({
+        title: "Success",
+        description: `Welcome, ${student.code}`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error during login:", error);
+      toast({
+        title: "Error",
+        description: "Failed to login. Please check your code.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -49,17 +84,17 @@ function LoginScreen() {
                 Prisijungimas
               </Heading>
 
-              <FormControl id="email" isRequired>
-                <FormLabel>El. paštas</FormLabel>
-                <Input type="email" placeholder="Įveskite el. paštą" />
-              </FormControl>
-
               <FormControl id="code" isRequired>
                 <FormLabel>Kodas</FormLabel>
-                <Input type="text" placeholder="Įveskite kodą" />
+                <Input
+                  type="text"
+                  placeholder="Įveskite kodą"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)} // Capture user input
+                />
               </FormControl>
 
-              <Button colorScheme="blue" w="full" onClick={() => handleLogin()}>
+              <Button colorScheme="blue" w="full" onClick={handleLogin}>
                 Prisijungti
               </Button>
             </VStack>
