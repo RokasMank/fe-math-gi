@@ -15,98 +15,116 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import api from "../../../apiClient";
 
-function AddQuestionForm({ testId, toast, callback }) {
-  const [text, setText] = useState("");
-  const [points, setPoints] = useState("");
-  const [questionType, setQuestionType] = useState("");
-  const [options, setOptions] = useState([]);
-  const [correctAnswers, setCorrectAnswers] = useState([]);
-
+function QuestionForm({ question, setQuestion, removeSubQuestion }) {
   const handleAddOption = () => {
-    setOptions([...options, ""]); // Add a new empty option
+    setQuestion({
+      ...question,
+      options: [...question.options, ""],
+    });
   };
 
   const handleRemoveOption = (index) => {
-    const updatedOptions = options.filter((_, i) => i !== index);
-    setOptions(updatedOptions);
-
-    // Ensure correctAnswers is a subset of updated options
-    const updatedCorrectAnswers = correctAnswers.filter((answer) =>
+    const updatedOptions = question.options.filter((_, i) => i !== index);
+    const updatedCorrectAnswers = question.correctAnswers.filter((answer) =>
       updatedOptions.includes(answer)
     );
-    setCorrectAnswers(updatedCorrectAnswers);
+    setQuestion({
+      ...question,
+      options: updatedOptions,
+      correctAnswers: updatedCorrectAnswers,
+    });
   };
 
   const handleOptionChange = (index, value) => {
-    const updatedOptions = [...options];
-    updatedOptions[index] = value; // Update the value of the option at the given index
-    setOptions(updatedOptions);
+    const updatedOptions = [...question.options];
+    updatedOptions[index] = value;
+    setQuestion({
+      ...question,
+      options: updatedOptions,
+    });
   };
 
-  const handleAddQuestion = async () => {
-    try {
-      const request = {
-        text,
-        points: parseInt(points),
-        questionType,
-        options,
-        correctAnswers,
-      };
+  const handleAddSubQuestion = () => {
+    setQuestion({
+      ...question,
+      subQuestions: [
+        ...question.subQuestions,
+        {
+          text: "",
+          points: "",
+          questionType: "",
+          options: [],
+          correctAnswers: [],
+          imageUrl: "",
+          subQuestions: [],
+          allowsEmptyAnswer: false, // New flag for Open Ended questions
+        },
+      ],
+    });
+  };
 
-      await api.post(`/Question/${testId}/questions`, request);
-      toast({
-        title: "Question Added.",
-        description: "The question has been successfully added to the test.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+  const handleRemoveSubQuestion = (index) => {
+    setQuestion({
+      ...question,
+      subQuestions: question.subQuestions.filter((_, i) => i !== index),
+    });
+  };
 
-      // Reset form fields
-      setText("");
-      setPoints("");
-      setQuestionType("");
-      setOptions([]);
-      setCorrectAnswers([]);
-      callback();
-    } catch (error) {
-      toast({
-        title: "Error Adding Question.",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
+  const handleSubQuestionChange = (index, updatedSubQuestion) => {
+    const updatedSubQuestions = [...question.subQuestions];
+    updatedSubQuestions[index] = updatedSubQuestion;
+    setQuestion({
+      ...question,
+      subQuestions: updatedSubQuestions,
+    });
   };
 
   return (
-    <Box>
+    <Box
+      borderWidth={1}
+      borderRadius="md"
+      padding={4}
+      width="100%"
+      marginBottom={4}
+    >
       <FormControl id="text" isRequired>
         <FormLabel>Question Text</FormLabel>
         <Textarea
-          width="100%"
           placeholder="Enter the question text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          value={question.text}
+          onChange={(e) => setQuestion({ ...question, text: e.target.value })}
         />
       </FormControl>
-      <HStack spacing={4} width="100%">
-        <FormControl id="points" isRequired>
+      <FormControl id="imageUrl">
+        <FormLabel>Image URL</FormLabel>
+        <Input
+          placeholder="Enter image URL"
+          value={question.imageUrl}
+          onChange={(e) =>
+            setQuestion({ ...question, imageUrl: e.target.value })
+          }
+        />
+      </FormControl>
+      <HStack spacing={4}>
+        <FormControl id="points">
           <FormLabel>Points</FormLabel>
           <Input
             type="number"
             placeholder="Enter points"
-            value={points}
-            onChange={(e) => setPoints(e.target.value)}
+            value={question.points}
+            onChange={(e) =>
+              setQuestion({ ...question, points: e.target.value })
+            }
           />
         </FormControl>
         <FormControl id="questionType" isRequired>
           <FormLabel>Question Type</FormLabel>
           <Select
             placeholder="Select question type"
-            value={questionType}
-            onChange={(e) => setQuestionType(e.target.value)}
+            value={question.questionType}
+            onChange={(e) =>
+              setQuestion({ ...question, questionType: e.target.value })
+            }
           >
             <option value="MultipleChoice">Multiple Choice</option>
             <option value="SingleChoice">Single Choice</option>
@@ -114,40 +132,61 @@ function AddQuestionForm({ testId, toast, callback }) {
           </Select>
         </FormControl>
       </HStack>
-      {questionType === "OpenEnded" && (
-        <FormControl id="correctAnswers" isRequired>
-          <FormLabel>Correct Answer</FormLabel>
-          <Textarea
-            placeholder="Enter the correct answer (one per line)"
-            value={correctAnswers.join("\n")}
-            onChange={(e) =>
-              setCorrectAnswers(
-                e.target.value.split("\n").map((line) => line.trim())
-              )
-            }
-          />
-        </FormControl>
+      {question.questionType === "OpenEnded" && (
+        <>
+          <FormControl id="correctAnswers">
+            <FormLabel>Correct Answer</FormLabel>
+            <Textarea
+              placeholder="Enter the correct answer (one per line)"
+              value={question.correctAnswers.join("\n")}
+              onChange={(e) =>
+                setQuestion({
+                  ...question,
+                  correctAnswers: e.target.value
+                    .split("\n")
+                    .map((line) => line.trim()),
+                })
+              }
+            />
+          </FormControl>
+          <FormControl display="flex" alignItems="center" marginTop={4}>
+            <Checkbox
+              isChecked={question.allowsEmptyAnswer}
+              onChange={(e) =>
+                setQuestion({
+                  ...question,
+                  allowsEmptyAnswer: e.target.checked,
+                })
+              }
+            >
+              Allow Empty Answer
+            </Checkbox>
+          </FormControl>
+        </>
       )}
-      {(questionType === "MultipleChoice" ||
-        questionType === "SingleChoice") && (
-        <FormControl id="options" isRequired>
+      {(question.questionType === "MultipleChoice" ||
+        question.questionType === "SingleChoice") && (
+        <FormControl id="options">
           <FormLabel>Options</FormLabel>
           <VStack spacing={2}>
-            {options.map((option, index) => (
-              <HStack key={index} width="100%">
+            {question.options.map((option, index) => (
+              <HStack key={index}>
                 <Input
                   placeholder={`Option ${index + 1}`}
                   value={option}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                 />
                 <Checkbox
-                  isChecked={correctAnswers.includes(option)}
+                  isChecked={question.correctAnswers.includes(option)}
                   onChange={() =>
-                    setCorrectAnswers((prev) =>
-                      prev.includes(option)
-                        ? prev.filter((ans) => ans !== option)
-                        : [...prev, option]
-                    )
+                    setQuestion({
+                      ...question,
+                      correctAnswers: question.correctAnswers.includes(option)
+                        ? question.correctAnswers.filter(
+                            (ans) => ans !== option
+                          )
+                        : [...question.correctAnswers, option],
+                    })
                   }
                 >
                   Mark as Correct
@@ -171,7 +210,86 @@ function AddQuestionForm({ testId, toast, callback }) {
           </VStack>
         </FormControl>
       )}
-      <Button marginTop={4} colorScheme="teal" onClick={handleAddQuestion}>
+      <VStack spacing={4} align="start" marginTop={4}>
+        <FormLabel>Subquestions</FormLabel>
+        {question.subQuestions.map((subQuestion, index) => (
+          <Box key={index} borderWidth={1} borderRadius="md" padding={4}>
+            <QuestionForm
+              question={subQuestion}
+              setQuestion={(updatedSubQuestion) =>
+                handleSubQuestionChange(index, updatedSubQuestion)
+              }
+              removeSubQuestion={() => handleRemoveSubQuestion(index)}
+            />
+            <Button
+              colorScheme="red"
+              size="sm"
+              marginTop={2}
+              onClick={() => handleRemoveSubQuestion(index)}
+            >
+              Remove Subquestion
+            </Button>
+          </Box>
+        ))}
+        <Button
+          leftIcon={<FaPlus />}
+          onClick={handleAddSubQuestion}
+          colorScheme="teal"
+          size="sm"
+        >
+          Add Subquestion
+        </Button>
+      </VStack>
+    </Box>
+  );
+}
+
+function AddQuestionForm({ testId, toast, callback }) {
+  const [question, setQuestion] = useState({
+    text: "",
+    points: "",
+    questionType: "",
+    options: [],
+    correctAnswers: [],
+    imageUrl: "",
+    subQuestions: [],
+  });
+
+  const handleAddQuestion = async () => {
+    try {
+      await api.post(`/Question/${testId}/questions`, question);
+      toast({
+        title: "Question Added",
+        description: "The question has been successfully added.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      setQuestion({
+        text: "",
+        points: "",
+        questionType: "",
+        options: [],
+        correctAnswers: [],
+        imageUrl: "",
+        subQuestions: [],
+      });
+      callback();
+    } catch (error) {
+      toast({
+        title: "Error Adding Question",
+        description: error.response?.data?.message || "Something went wrong.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  return (
+    <Box>
+      <QuestionForm question={question} setQuestion={setQuestion} />
+      <Button colorScheme="teal" onClick={handleAddQuestion}>
         Add Question
       </Button>
     </Box>

@@ -14,23 +14,25 @@ import {
   HStack,
   useToast,
 } from "@chakra-ui/react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../apiClient";
 
 const StudentTestPage = () => {
   const { id } = useParams(); // Test session ID
-  const [testSession, setTestSession] = useState(null);
+  const [test, setTest] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { testId } = location.state || {};
 
   useEffect(() => {
     const fetchTestSession = async () => {
       try {
-        const response = await api.get(`/TestSession/${id}`);
-        setTestSession(response.data);
+        const response = await api.get(`/Test/${testId}`);
+        setTest(response.data);
       } catch (error) {
         console.error("Error fetching test session:", error);
         toast({
@@ -46,21 +48,20 @@ const StudentTestPage = () => {
     };
 
     fetchTestSession();
-  }, [id, toast]);
+  }, [testId, toast]);
 
   const handleAnswerSubmit = async (isFinal) => {
-    const question = testSession.test.questions[currentQuestionIndex];
-    const payload = {
-      studentTestSessionId: testSession.id,
-      questionId: question.id,
-      providedAnswers: selectedAnswers,
-    };
+    const question = test.questions[currentQuestionIndex];
+    const answersToSubmit = extractAnswers(question);
 
     try {
-      await api.post("/TestSession/submit-answer", payload);
+      await api.put("/TestSession/submit-answer", {
+        studentTestSessionId: id,
+        answers: answersToSubmit,
+      });
       toast({
         title: "Answer Submitted",
-        description: "Your answer has been saved.",
+        description: "Your answers have been saved.",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -70,13 +71,13 @@ const StudentTestPage = () => {
         handleCompleteTest();
       } else {
         setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-        setSelectedAnswers([]);
+        setSelectedAnswers({});
       }
     } catch (error) {
-      console.error("Error submitting answer:", error);
+      console.error("Error submitting answers:", error);
       toast({
         title: "Error",
-        description: "Failed to submit your answer.",
+        description: "Failed to submit your answers.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -84,10 +85,27 @@ const StudentTestPage = () => {
     }
   };
 
+  const extractAnswers = (question) => {
+    let answers = [
+      {
+        questionId: question.id,
+        providedAnswers: selectedAnswers[question.id] || [],
+      },
+    ];
+
+    if (question.subQuestions && question.subQuestions.length > 0) {
+      question.subQuestions.forEach((subQuestion) => {
+        answers = answers.concat(extractAnswers(subQuestion));
+      });
+    }
+
+    return answers;
+  };
+
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-      setSelectedAnswers([]); // Reset selected answers for the new question
+      setSelectedAnswers({});
     }
   };
 
@@ -107,7 +125,7 @@ const StudentTestPage = () => {
         duration: 5000,
         isClosable: true,
       });
-      navigate(`/results/${testSession.id}`);
+      navigate(`/results/${id}`);
     } catch (error) {
       console.error("Error completing test:", error);
       toast({
@@ -133,61 +151,96 @@ const StudentTestPage = () => {
     );
   }
 
-  if (!testSession) {
+  if (!test) {
     return <Text>No test session found.</Text>;
   }
 
-  const question = testSession.test.questions[currentQuestionIndex];
+  const question = test.questions[currentQuestionIndex];
+
+  const renderQuestion = (question) => (
+    <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
+      <Text fontWeight="bold" marginBottom={2}>
+        {question.text}
+      </Text>
+
+      {/* Render input fields only if the question has correct answers and no subquestions */}
+      {!question.subQuestions?.length && question.correctAnswers.length > 0 && (
+        <>
+          {question.questionType === 1 && (
+            <CheckboxGroup
+              value={selectedAnswers[question.id] || []}
+              onChange={(values) =>
+                setSelectedAnswers((prev) => ({
+                  ...prev,
+                  [question.id]: values,
+                }))
+              }
+            >
+              <VStack align="start">
+                {question.options.map((option, index) => (
+                  <Checkbox key={index} value={option}>
+                    {option}
+                  </Checkbox>
+                ))}
+              </VStack>
+            </CheckboxGroup>
+          )}
+          {question.questionType === 2 && (
+            <RadioGroup
+              value={selectedAnswers[question.id]?.[0] || ""}
+              onChange={(value) =>
+                setSelectedAnswers((prev) => ({
+                  ...prev,
+                  [question.id]: [value],
+                }))
+              }
+            >
+              <VStack align="start">
+                {question.options.map((option, index) => (
+                  <Radio key={index} value={option}>
+                    {option}
+                  </Radio>
+                ))}
+              </VStack>
+            </RadioGroup>
+          )}
+          {question.questionType === 0 && (
+            <Textarea
+              placeholder="Type your answer here..."
+              value={selectedAnswers[question.id]?.[0] || ""}
+              onChange={(e) =>
+                setSelectedAnswers((prev) => ({
+                  ...prev,
+                  [question.id]: [e.target.value],
+                }))
+              }
+            />
+          )}
+        </>
+      )}
+
+      {/* Render subquestions recursively */}
+      {question.subQuestions?.length > 0 && (
+        <VStack align="start" marginTop={4}>
+          {question.subQuestions.map((subQuestion, index) => (
+            <Box key={index} marginTop={2}>
+              {renderQuestion(subQuestion)}
+            </Box>
+          ))}
+        </VStack>
+      )}
+    </Box>
+  );
 
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={4}>
-        {testSession.test.title}
+        {test.title}
       </Heading>
       <Text fontSize="md" marginBottom={6}>
-        Question {currentQuestionIndex + 1} of{" "}
-        {testSession.test.questions.length}
+        Question {currentQuestionIndex + 1} of {test.questions.length}
       </Text>
-      <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
-        <Text fontWeight="bold" marginBottom={2}>
-          {question.text}
-        </Text>
-        {question.questionType === 1 && (
-          <CheckboxGroup
-            value={selectedAnswers}
-            onChange={(values) => setSelectedAnswers(values)}
-          >
-            <VStack align="start">
-              {question.options.map((option, index) => (
-                <Checkbox key={index} value={option}>
-                  {option}
-                </Checkbox>
-              ))}
-            </VStack>
-          </CheckboxGroup>
-        )}
-        {question.questionType === 2 && (
-          <RadioGroup
-            value={selectedAnswers[0] || ""}
-            onChange={(value) => setSelectedAnswers([value])}
-          >
-            <VStack align="start">
-              {question.options.map((option, index) => (
-                <Radio key={index} value={option}>
-                  {option}
-                </Radio>
-              ))}
-            </VStack>
-          </RadioGroup>
-        )}
-        {question.questionType === 0 && (
-          <Textarea
-            placeholder="Type your answer here..."
-            value={selectedAnswers[0] || ""}
-            onChange={(e) => setSelectedAnswers([e.target.value])}
-          />
-        )}
-      </Box>
+      {renderQuestion(question)}
       <HStack spacing={4}>
         <Button
           colorScheme="gray"
@@ -200,18 +253,22 @@ const StudentTestPage = () => {
           colorScheme="blue"
           onClick={() =>
             handleAnswerSubmit(
-              currentQuestionIndex + 1 === testSession.test.questions.length
+              currentQuestionIndex + 1 === test.questions.length
             )
           }
-          isDisabled={selectedAnswers.length === 0}
+          isDisabled={
+            !selectedAnswers[question.id]?.length &&
+            !question.subQuestions?.length &&
+            question.correctAnswers.length > 0
+          }
         >
-          {currentQuestionIndex + 1 < testSession.test.questions.length
+          {currentQuestionIndex + 1 < test.questions.length
             ? "Next"
             : "Finish Test"}
         </Button>
       </HStack>
       <HStack spacing={2} marginTop={4}>
-        {testSession.test.questions.map((_, index) => (
+        {test.questions.map((_, index) => (
           <Button
             key={index}
             colorScheme={index === currentQuestionIndex ? "blue" : "gray"}

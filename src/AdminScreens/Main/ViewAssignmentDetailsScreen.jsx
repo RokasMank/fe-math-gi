@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
+import QuestionView from "../../Common/QuestionView";
 
 const ViewAssignmentDetailsScreen = () => {
   const { id } = useParams();
@@ -157,8 +158,8 @@ const ViewAssignmentDetailsScreen = () => {
         Assigned Students
       </Heading>
       <VStack align="start" spacing={2}>
-        {assignment.students.length > 0 ? (
-          assignment.students.map((student, index) => (
+        {assignment.studentSessions.length > 0 ? (
+          assignment.studentSessions.map((student, index) => (
             <Box key={index} borderWidth={1} borderRadius="md" padding={3}>
               <Text>Code: {student.code}</Text>
               <Text>Class: {student.studentClass}</Text>
@@ -170,41 +171,13 @@ const ViewAssignmentDetailsScreen = () => {
         )}
       </VStack>
       <Divider marginTop={6} marginBottom={4} />
-      <Heading size="md" marginBottom={4}>
-        Questions
-      </Heading>
-      <VStack align="start" spacing={2}>
-        {assignment.test.questions.length > 0 ? (
-          assignment.test.questions.map((question, index) => (
-            <Box key={index} borderWidth={1} borderRadius="md" padding={3}>
-              <Text fontWeight="bold">
-                {index + 1}. {question.text}
-              </Text>
-              <Text>Points: {question.points}</Text>
-              <Text>Type: {question.questionType}</Text>
-              {question.options.length > 0 && (
-                <>
-                  <Text>Options:</Text>
-                  <VStack align="start">
-                    {question.options.map((option, optIndex) => (
-                      <Text key={optIndex}>
-                        - {option}{" "}
-                        {question.correctAnswers.includes(option) && (
-                          <Text as="span" color="green">
-                            (Correct)
-                          </Text>
-                        )}
-                      </Text>
-                    ))}
-                  </VStack>
-                </>
-              )}
-            </Box>
-          ))
-        ) : (
-          <Text>No questions available for this test.</Text>
-        )}
-      </VStack>
+      <Button
+        colorScheme="green"
+        onClick={() => navigate(`/admin/test/${assignment.testId}`)}
+      >
+        View test
+      </Button>
+
       <Divider marginTop={6} marginBottom={4} />
       <HStack spacing={4}>
         {!assignment.isPublished ? (

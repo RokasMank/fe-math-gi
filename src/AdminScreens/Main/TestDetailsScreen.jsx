@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
+import QuestionView from "../../Common/QuestionView";
 
 const TestDetailsScreen = () => {
   const { id } = useParams(); // Get test ID from route params
@@ -154,61 +155,62 @@ const TestDetailsScreen = () => {
       <VStack align="start" spacing={4}>
         {test.questions.length > 0 ? (
           test.questions.map((question, index) => (
-            <Box
-              key={question.id}
-              borderWidth={1}
-              borderRadius="md"
-              padding={4}
-              width="100%"
-            >
-              <HStack justify="space-between">
-                <Box>
-                  <Text fontWeight="bold">
-                    {index + 1}. {question.text}
-                  </Text>
-                  <Text>Points: {question.points}</Text>
-                  {question.options?.length > 0 ? (
-                    <Box marginTop={2}>
-                      <Text fontWeight="bold">Options:</Text>
-                      <VStack align="start">
-                        {question.options.map((option, idx) => (
-                          <HStack key={idx} spacing={2}>
-                            <Text>- {option}</Text>
-                            {question.correctAnswers.includes(option) && (
-                              <Text
-                                fontSize="sm"
-                                color="green.500"
-                                fontWeight="bold"
-                              >
-                                (Correct)
-                              </Text>
-                            )}
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </Box>
-                  ) : (
-                    <Box marginTop={2}>
-                      <Text fontWeight="bold">Correct Answers:</Text>
-                      <VStack align="start">
-                        {question.correctAnswers.map((answer, idx) => (
-                          <Text key={idx}>- {answer}</Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-                </Box>
-                {!test.published && (
-                  <Button
-                    colorScheme="red"
-                    size="sm"
-                    onClick={() => handleRemoveQuestion(question.id)}
-                  >
-                    Remove
-                  </Button>
-                )}
-              </HStack>
-            </Box>
+            // <Box
+            //   key={question.id}
+            //   borderWidth={1}
+            //   borderRadius="md"
+            //   padding={4}
+            //   width="100%"
+            // >
+            //   <HStack justify="space-between">
+            //     <Box>
+            //       <Text fontWeight="bold">
+            //         {index + 1}. {question.text}
+            //       </Text>
+            //       <Text>Points: {question.points}</Text>
+            //       {question.options?.length > 0 ? (
+            //         <Box marginTop={2}>
+            //           <Text fontWeight="bold">Options:</Text>
+            //           <VStack align="start">
+            //             {question.options.map((option, idx) => (
+            //               <HStack key={idx} spacing={2}>
+            //                 <Text>- {option}</Text>
+            //                 {question.correctAnswers.includes(option) && (
+            //                   <Text
+            //                     fontSize="sm"
+            //                     color="green.500"
+            //                     fontWeight="bold"
+            //                   >
+            //                     (Correct)
+            //                   </Text>
+            //                 )}
+            //               </HStack>
+            //             ))}
+            //           </VStack>
+            //         </Box>
+            //       ) : (
+            //         <Box marginTop={2}>
+            //           <Text fontWeight="bold">Correct Answers:</Text>
+            //           <VStack align="start">
+            //             {question.correctAnswers.map((answer, idx) => (
+            //               <Text key={idx}>- {answer}</Text>
+            //             ))}
+            //           </VStack>
+            //         </Box>
+            //       )}
+            //     </Box>
+            //     {!test.published && (
+            //       <Button
+            //         colorScheme="red"
+            //         size="sm"
+            //         onClick={() => handleRemoveQuestion(question.id)}
+            //       >
+            //         Remove
+            //       </Button>
+            //     )}
+            //   </HStack>
+            // </Box>
+            <QuestionView question={question} />
           ))
         ) : (
           <Text>No questions available for this test.</Text>

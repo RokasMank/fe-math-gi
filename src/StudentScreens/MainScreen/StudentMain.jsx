@@ -87,7 +87,11 @@ const StudentMain = () => {
               colorScheme="blue"
               size="sm"
               marginTop={2}
-              onClick={() => navigate(`/test/${session.id}`)}
+              onClick={() =>
+                navigate(`/test/${session.id}`, {
+                  state: { testId: session.test.id },
+                })
+              }
             >
               Pradėti testą
             </Button>

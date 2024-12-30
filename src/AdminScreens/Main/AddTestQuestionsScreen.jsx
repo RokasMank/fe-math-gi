@@ -6,13 +6,13 @@ import {
   Text,
   Button,
   Spinner,
-  HStack,
   Divider,
   useToast,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import AddQuestionForm from "./Components/AddQuestionForm"; // Import the AddQuestionForm component
-import api from "../../apiClient"; // Import API client
+import AddQuestionForm from "./Components/AddQuestionForm";
+import QuestionView from "../../Common/QuestionView";
+import api from "../../apiClient";
 
 function AddTestTestQuestionsScreen() {
   const { testId } = useParams(); // Get testId from URL
@@ -109,60 +109,12 @@ function AddTestTestQuestionsScreen() {
       </Heading>
       {testDetails.questions.length > 0 ? (
         <VStack align="start" spacing={4}>
-          {testDetails.questions.map((question, index) => (
-            <Box
+          {testDetails.questions.map((question) => (
+            <QuestionView
               key={question.id}
-              borderWidth={1}
-              borderRadius="md"
-              padding={4}
-              width="100%"
-            >
-              <HStack justify="space-between">
-                <Box>
-                  <Text fontWeight="bold">
-                    {index + 1}. {question.text}
-                  </Text>
-                  <Text>Points: {question.points}</Text>
-                  {question.options?.length > 0 ? (
-                    <Box marginTop={2}>
-                      <Text fontWeight="bold">Options:</Text>
-                      <VStack align="start">
-                        {question.options.map((option, idx) => (
-                          <HStack key={idx} spacing={2}>
-                            <Text>- {option}</Text>
-                            {question.correctAnswers.includes(option) && (
-                              <Text
-                                fontSize="sm"
-                                color="green.500"
-                                fontWeight="bold"
-                              >
-                                (Correct)
-                              </Text>
-                            )}
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </Box>
-                  ) : (
-                    <Box marginTop={2}>
-                      <Text fontWeight="bold">Correct Answers:</Text>
-                      <VStack align="start">
-                        {question.correctAnswers.map((answer, idx) => (
-                          <Text key={idx}>- {answer}</Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-                </Box>
-                <Button
-                  colorScheme="red"
-                  size="sm"
-                  onClick={() => handleRemoveQuestion(question.id)}
-                >
-                  Remove
-                </Button>
-              </HStack>
-            </Box>
+              question={question}
+              onRemove={() => handleRemoveQuestion(question.id)}
+            />
           ))}
         </VStack>
       ) : (
