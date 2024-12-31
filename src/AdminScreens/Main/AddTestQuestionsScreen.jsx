@@ -9,12 +9,13 @@ import {
   Divider,
   useToast,
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddQuestionForm from "./Components/AddQuestionForm";
 import QuestionView from "../../Common/QuestionView";
 import api from "../../apiClient";
 
 function AddTestTestQuestionsScreen() {
+  const navigate = useNavigate();
   const { testId } = useParams(); // Get testId from URL
   const toast = useToast();
   const [testDetails, setTestDetails] = useState(null); // State for test details
@@ -120,6 +121,7 @@ function AddTestTestQuestionsScreen() {
       ) : (
         <Text>No questions have been added to this test yet.</Text>
       )}
+      <Button onClick={() => navigate("/admin/all-tests")}>View tests</Button>
     </Box>
   );
 }

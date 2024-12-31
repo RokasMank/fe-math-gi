@@ -12,7 +12,6 @@ import {
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
-import QuestionView from "../../Common/QuestionView";
 
 const ViewAssignmentDetailsScreen = () => {
   const { id } = useParams();
@@ -82,7 +81,7 @@ const ViewAssignmentDetailsScreen = () => {
         duration: 5000,
         isClosable: true,
       });
-      navigate("/admin/view-assignments");
+      navigate(`/admin/view-assignments`);
     } catch (error) {
       console.error("Error publishing assignment:", error);
       toast({
@@ -118,6 +117,35 @@ const ViewAssignmentDetailsScreen = () => {
     }
   };
 
+  const handleFinishAssignment = async () => {
+    const confirmFinish = window.confirm(
+      "Are you sure you want to finish this assignment? This action is irreversible."
+    );
+
+    if (!confirmFinish) return;
+
+    try {
+      await api.post(`/TestAssignment/${id}/finish`);
+      toast({
+        title: "Success",
+        description: "Assignment marked as finished successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      navigate(`/admin/view-assignments`);
+    } catch (error) {
+      console.error("Error finishing assignment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to finish assignment.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -135,6 +163,32 @@ const ViewAssignmentDetailsScreen = () => {
     return <Text>No assignment found.</Text>;
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return "gray.400";
+      case 1:
+        return "yellow.400";
+      case 2:
+        return "green.400";
+      default:
+        return "gray.400";
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 0:
+        return "Draft";
+      case 1:
+        return "Published";
+      case 2:
+        return "Finished";
+      default:
+        return "NA";
+    }
+  };
+
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={6}>
@@ -149,7 +203,20 @@ const ViewAssignmentDetailsScreen = () => {
       </Heading>
       <VStack align="start" spacing={2}>
         <Text>Class: {assignment.class}</Text>
-        <Text>Status: {assignment.isPublished ? "Published" : "Draft"}</Text>
+        <Text>
+          Status:{" "}
+          <Text
+            as="span"
+            fontWeight="bold"
+            paddingX={2}
+            paddingY={1}
+            borderRadius="md"
+            backgroundColor={getStatusColor(assignment.testAssignmentStatus)}
+            color="white"
+          >
+            {getStatusText(assignment.testAssignmentStatus)}
+          </Text>
+        </Text>
         <Text>Test: {assignment.test.title}</Text>
         <Text>Test Description: {assignment.test.description}</Text>
       </VStack>
@@ -164,12 +231,33 @@ const ViewAssignmentDetailsScreen = () => {
               <Text>Code: {student.code}</Text>
               <Text>Class: {student.studentClass}</Text>
               <Text>Gender: {student.gender}</Text>
+              <Text>
+                Status:{" "}
+                <Text
+                  as="span"
+                  fontWeight="bold"
+                  color={
+                    student.sessionStatus === 0
+                      ? "gray.400"
+                      : student.sessionStatus === 1
+                      ? "yellow.400"
+                      : "green.400"
+                  }
+                >
+                  {student.sessionStatus === 0
+                    ? "Draft"
+                    : student.sessionStatus === 1
+                    ? "In Progress"
+                    : "Finished"}
+                </Text>
+              </Text>
             </Box>
           ))
         ) : (
           <Text>No students assigned to this assignment.</Text>
         )}
       </VStack>
+
       <Divider marginTop={6} marginBottom={4} />
       <Button
         colorScheme="green"
@@ -180,7 +268,7 @@ const ViewAssignmentDetailsScreen = () => {
 
       <Divider marginTop={6} marginBottom={4} />
       <HStack spacing={4}>
-        {!assignment.isPublished ? (
+        {assignment.testAssignmentStatus === 0 && (
           <>
             <Button colorScheme="green" onClick={handlePublishAssignment}>
               Publish Assignment
@@ -189,10 +277,16 @@ const ViewAssignmentDetailsScreen = () => {
               Delete Assignment
             </Button>
           </>
-        ) : (
-          <Button colorScheme="yellow" onClick={handleUnpublishAssignment}>
-            Unpublish Assignment
-          </Button>
+        )}
+        {assignment.testAssignmentStatus === 1 && (
+          <>
+            <Button colorScheme="yellow" onClick={handleUnpublishAssignment}>
+              Unpublish Assignment
+            </Button>
+            <Button colorScheme="blue" onClick={handleFinishAssignment}>
+              Finish Assignment
+            </Button>
+          </>
         )}
         <Button
           colorScheme="blue"

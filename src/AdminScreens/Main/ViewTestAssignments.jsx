@@ -18,6 +18,32 @@ const ViewTestAssignmentsScreen = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return "gray.400"; // Draft
+      case 1:
+        return "yellow.400"; // Published
+      case 2:
+        return "green.400"; // Finished
+      default:
+        return "gray.400"; // Default
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 0:
+        return "Draft";
+      case 1:
+        return "Published";
+      case 2:
+        return "Finished";
+      default:
+        return "NA"; // Default
+    }
+  };
+
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -77,7 +103,14 @@ const ViewTestAssignmentsScreen = () => {
                 <Text>Description: {assignment.description}</Text>
                 <Text>Class: {assignment.class}</Text>
                 <Text>
-                  Status: {assignment.isPublished ? "Published" : "Draft"}
+                  Status:{" "}
+                  <Text
+                    as="span"
+                    fontWeight="bold"
+                    color={getStatusColor(assignment.testAssignmentStatus)}
+                  >
+                    {getStatusText(assignment.testAssignmentStatus)}
+                  </Text>
                 </Text>
               </Box>
               <Button

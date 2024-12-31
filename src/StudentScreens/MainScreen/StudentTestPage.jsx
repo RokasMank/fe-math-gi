@@ -13,6 +13,7 @@ import {
   Textarea,
   HStack,
   useToast,
+  Image,
 } from "@chakra-ui/react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../apiClient";
@@ -71,7 +72,6 @@ const StudentTestPage = () => {
         handleCompleteTest();
       } else {
         setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-        setSelectedAnswers({});
       }
     } catch (error) {
       console.error("Error submitting answers:", error);
@@ -105,7 +105,6 @@ const StudentTestPage = () => {
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-      setSelectedAnswers({});
     }
   };
 
@@ -162,6 +161,7 @@ const StudentTestPage = () => {
       <Text fontWeight="bold" marginBottom={2}>
         {question.text}
       </Text>
+      <Image src={question.imageUrl} />
 
       {/* Render input fields only if the question has correct answers and no subquestions */}
       {!question.subQuestions?.length && question.correctAnswers.length > 0 && (
