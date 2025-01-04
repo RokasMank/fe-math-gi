@@ -18,14 +18,14 @@ function CreateStudentScreen() {
   const [code, setCode] = useState("");
   const [gender, setGender] = useState("");
   const [studentClass, setStudentClass] = useState("");
+  const [school, setSchool] = useState("");
   const toast = useToast();
 
   const handleAddStudent = async () => {
-    const parsedClass = parseInt(studentClass);
-    if (isNaN(parsedClass) || parsedClass < 1 || parsedClass > 4) {
+    if (!studentClass) {
       toast({
         title: "Invalid Class.",
-        description: "Class must be a number between 1 and 4.",
+        description: "Class must not be empty.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -33,9 +33,13 @@ function CreateStudentScreen() {
       return;
     }
 
-    console.log(localStorage.getItem("token"));
     try {
-      await api.post("/Student/create", { code, gender, class: parsedClass });
+      await api.post("/Student/create", {
+        code,
+        gender,
+        class: studentClass,
+        school,
+      });
       toast({
         title: "Student Added.",
         description: "The student has been successfully added.",
@@ -46,13 +50,12 @@ function CreateStudentScreen() {
       setCode("");
       setGender("");
       setStudentClass("");
+      setSchool("");
     } catch (error) {
       if (error.status === 409) {
         toast({
           title: "Error Adding Student.",
-          description:
-            error.response?.data?.message ||
-            "Student with this code already exists",
+          description: "Student with this code already exists.",
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -105,10 +108,19 @@ function CreateStudentScreen() {
             <FormControl id="class" isRequired>
               <FormLabel>Class</FormLabel>
               <Input
-                type="number"
-                placeholder="Enter class (1-4)"
+                type="text"
+                placeholder="Enter class (e.g., 10A, 11B)"
                 value={studentClass}
                 onChange={(e) => setStudentClass(e.target.value)}
+              />
+            </FormControl>
+            <FormControl id="school" isRequired>
+              <FormLabel>School</FormLabel>
+              <Input
+                type="text"
+                placeholder="Enter school name"
+                value={school}
+                onChange={(e) => setSchool(e.target.value)}
               />
             </FormControl>
             <Button colorScheme="teal" onClick={handleAddStudent}>

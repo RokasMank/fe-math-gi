@@ -159,6 +159,37 @@ const ViewAssignmentDetailsScreen = () => {
     );
   }
 
+  const handleDownloadResults = async () => {
+    try {
+      const response = await api.get(`/TestAssignment/${id}/download-results`, {
+        responseType: "blob", // To handle binary data
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `assignment_${id}_results.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast({
+        title: "Success",
+        description: "Results downloaded successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error downloading results:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download results.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (!assignment) {
     return <Text>No assignment found.</Text>;
   }
@@ -293,6 +324,9 @@ const ViewAssignmentDetailsScreen = () => {
           onClick={() => navigate("/admin/view-assignments")}
         >
           Back to Assignments
+        </Button>
+        <Button colorScheme="teal" onClick={handleDownloadResults}>
+          Download Results
         </Button>
       </HStack>
     </Box>

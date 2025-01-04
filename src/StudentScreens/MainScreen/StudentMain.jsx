@@ -42,6 +42,31 @@ const StudentMain = () => {
     fetchTestSessions();
   }, [toast, navigate]);
 
+  const handleStartSession = async (sessionId, testId) => {
+    try {
+      // Call the StartSession endpoint
+      await api.put(`/TestSession/start/${sessionId}`);
+      toast({
+        title: "Session Started",
+        description: "You can now begin your test.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      // Navigate to the test page
+      navigate(`/test/${sessionId}`, { state: { testId } });
+    } catch (error) {
+      console.error("Error starting test session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start the test session.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -69,7 +94,7 @@ const StudentMain = () => {
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={6}>
-        Your Test Sessions
+        Sesijos
       </Heading>
       <VStack spacing={4} align="start">
         {sessions.map((session) => (
@@ -81,17 +106,13 @@ const StudentMain = () => {
             width="100%"
           >
             <Text fontWeight="bold">{session.test.title}</Text>
-            <Text>Description: {session.test.description}</Text>
-            <Text>Status: {session.sessionStatus}</Text>
+            <Text>Aprašymas: {session.test.description}</Text>
+            <Text>Statusas: {session.sessionStatus}</Text>
             <Button
               colorScheme="blue"
               size="sm"
               marginTop={2}
-              onClick={() =>
-                navigate(`/test/${session.id}`, {
-                  state: { testId: session.test.id },
-                })
-              }
+              onClick={() => handleStartSession(session.id, session.test.id)}
             >
               Pradėti testą
             </Button>

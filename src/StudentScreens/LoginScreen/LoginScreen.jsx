@@ -38,6 +38,7 @@ function LoginScreen() {
 
       // Save id to localStorage
       localStorage.setItem("studentId", student.id);
+      localStorage.setItem("studentCode", student.code);
 
       // Navigate to the main screen with student data if needed
       navigate("/main", { state: { student } });

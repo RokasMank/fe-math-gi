@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import reportWebVitals from "./reportWebVitals";
+import { ChakraProvider } from "@chakra-ui/react";
+import theme from "./theme.js";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import ErrorPage from "./Common/ErrorPage.jsx";
 import LoginScreen from "./StudentScreens/LoginScreen/LoginScreen.jsx";
 import AdminLoginScreen from "./AdminScreens/LoginScreen/LoginScreen.jsx";
-import reportWebVitals from "./reportWebVitals";
-import { Box, ChakraProvider } from "@chakra-ui/react";
-import theme from "./theme.js";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ErrorPage from "./Common/ErrorPage.jsx";
 import StudentMain from "./StudentScreens/MainScreen/StudentMain.jsx";
 import LandingScreen from "./AdminScreens/LandingScreen/LandingScreen.jsx";
 import AdminCreateScreen from "./AdminScreens/Main/AdminCreateScreen.jsx";
@@ -21,9 +21,13 @@ import ViewTestAssignmentsScreen from "./AdminScreens/Main/ViewTestAssignments.j
 import ViewAssignmentDetailsScreen from "./AdminScreens/Main/ViewAssignmentDetailsScreen.jsx";
 import StudentTestPage from "./StudentScreens/MainScreen/StudentTestPage.jsx";
 import TestResultsPage from "./StudentScreens/MainScreen/TestResultsPage.jsx";
-import AppLayout from "./Common/AppLayoutDraft.jsx";
+import Layout from "./Common/Layout";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const AppLayout = () => (
+  <Layout>
+    <Outlet />
+  </Layout>
+);
 
 const router = createBrowserRouter([
   {
@@ -36,70 +40,49 @@ const router = createBrowserRouter([
     element: <AdminLoginScreen />,
   },
   {
-    path: "admin/landing",
-    element: <LandingScreen />,
-  },
-  {
-    path: "admin/create",
-    element: <AdminCreateScreen />,
-  },
-  {
-    path: "admin/add-student",
-    element: <CreateStudentScreen />,
-  },
-  {
-    path: "admin/create-test",
-    element: <CreateTestScreen />,
-  },
-  {
-    path: "admin/create-test/add-questions/:testId",
-    element: <AddTestTestQuestionsScreen />,
-  },
-  {
-    path: "admin/all-tests",
-    element: <AllTestsScreen />,
-  },
-  {
-    path: "admin/test/:id",
-    element: <TestDetailsScreen />,
-  },
-  {
-    path: "admin/create-assignment",
-    element: <CreateTestAssignmentScreen />,
-  },
-  {
-    path: "admin/view-assignments",
-    element: <ViewTestAssignmentsScreen />,
-  },
-  {
-    path: "admin/view-assignment/:id",
-    element: <ViewAssignmentDetailsScreen />,
+    path: "admin",
+    element: <AppLayout />,
+    children: [
+      { path: "landing", element: <LandingScreen /> },
+      { path: "create", element: <AdminCreateScreen /> },
+      { path: "add-student", element: <CreateStudentScreen /> },
+      { path: "create-test", element: <CreateTestScreen /> },
+      {
+        path: "create-test/add-questions/:testId",
+        element: <AddTestTestQuestionsScreen />,
+      },
+      { path: "all-tests", element: <AllTestsScreen /> },
+      { path: "test/:id", element: <TestDetailsScreen /> },
+      { path: "create-assignment", element: <CreateTestAssignmentScreen /> },
+      { path: "view-assignments", element: <ViewTestAssignmentsScreen /> },
+      { path: "view-assignment/:id", element: <ViewAssignmentDetailsScreen /> },
+    ],
   },
   {
     path: "main",
-    element: <StudentMain />,
+    element: <AppLayout />,
+    children: [{ path: "", element: <StudentMain /> }],
   },
   {
     path: "test/:id",
-    element: <StudentTestPage />,
+    element: <AppLayout />,
+    children: [{ path: "", element: <StudentTestPage /> }],
   },
   {
     path: "results/:id",
-    element: <TestResultsPage />,
+    element: <AppLayout />,
+    children: [{ path: "", element: <TestResultsPage /> }],
   },
 ]);
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
-      <RouterProvider router={router}>
-        <AppLayout />
-      </RouterProvider>
+      <RouterProvider router={router} />
     </ChakraProvider>
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
