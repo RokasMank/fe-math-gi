@@ -109,17 +109,15 @@ const StudentTestPage = () => {
   };
 
   const handleCompleteTest = async () => {
-    const confirmFinish = window.confirm(
-      "Are you sure you want to finish the test? You will not be able to change your answers."
-    );
+    const confirmFinish = window.confirm("Ar tikrai norite baigti testą?");
 
     if (!confirmFinish) return;
 
     try {
       const response = await api.post(`/TestSession/${id}/complete`);
       toast({
-        title: "Test Completed",
-        description: `Your test is complete. Total score: ${response.data.totalScore}`,
+        title: "Testas baigtas",
+        description: `Taškai: ${response.data.totalScore}`,
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -158,12 +156,11 @@ const StudentTestPage = () => {
 
   const renderQuestion = (question) => (
     <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
-      <Text fontWeight="bold" marginBottom={2}>
+      <Text fontWeight="bold" marginBottom={2} fontSize="14pt">
         {question.text}
       </Text>
-      <Image src={question.imageUrl} />
+      {question.imageUrl && <Image src={question.imageUrl} />}
 
-      {/* Render input fields only if the question has correct answers and no subquestions */}
       {!question.subQuestions?.length && question.correctAnswers.length > 0 && (
         <>
           {question.questionType === 1 && (
@@ -206,7 +203,7 @@ const StudentTestPage = () => {
           )}
           {question.questionType === 0 && (
             <Textarea
-              placeholder="Type your answer here..."
+              placeholder="Įrašykite atsakymą"
               value={selectedAnswers[question.id]?.[0] || ""}
               onChange={(e) =>
                 setSelectedAnswers((prev) => ({
@@ -219,7 +216,6 @@ const StudentTestPage = () => {
         </>
       )}
 
-      {/* Render subquestions recursively */}
       {question.subQuestions?.length > 0 && (
         <VStack align="start" marginTop={4}>
           {question.subQuestions.map((subQuestion, index) => (
@@ -238,7 +234,7 @@ const StudentTestPage = () => {
         {test.title}
       </Heading>
       <Text fontSize="md" marginBottom={6}>
-        Question {currentQuestionIndex + 1} of {test.questions.length}
+        Klausimas {currentQuestionIndex + 1} iš {test.questions.length}
       </Text>
       {renderQuestion(question)}
       <HStack spacing={4}>
@@ -247,7 +243,7 @@ const StudentTestPage = () => {
           onClick={handlePreviousQuestion}
           isDisabled={currentQuestionIndex === 0}
         >
-          Previous
+          Ankstesnis
         </Button>
         <Button
           colorScheme="blue"
@@ -263,8 +259,8 @@ const StudentTestPage = () => {
           }
         >
           {currentQuestionIndex + 1 < test.questions.length
-            ? "Next"
-            : "Finish Test"}
+            ? "Kitas"
+            : "Baigti testą"}
         </Button>
       </HStack>
       <HStack spacing={2} marginTop={4}>

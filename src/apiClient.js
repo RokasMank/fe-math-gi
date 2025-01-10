@@ -1,7 +1,13 @@
 import axios from "axios";
 
+// Determine the base URL based on the hostname
+const isLocalhost = window.location.hostname === "localhost";
+const baseURL = isLocalhost
+  ? "https://localhost:7222" // Development backend
+  : "http://158.129.2.190:5000"; // Production backend (no trailing slash)
+
 const apiClient = axios.create({
-  baseURL: "https://localhost:7222",
+  baseURL: baseURL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -26,6 +32,7 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Handle unauthorized access (e.g., redirect to login)
       console.error("Unauthorized access, redirecting to login...");
+      // Example: window.location.href = "/login";
     }
     return Promise.reject(error);
   }
