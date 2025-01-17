@@ -57,7 +57,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           correctAnswers: [],
           imageUrl: "",
           subQuestions: [],
-          allowsEmptyAnswer: false, // New flag for Open Ended questions
+          allowsEmptyAnswer: false,
         },
       ],
     });
@@ -162,6 +162,36 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
               Allow Empty Answer
             </Checkbox>
           </FormControl>
+          <FormControl display="flex" alignItems="center" marginTop={4}>
+            <Checkbox
+              isChecked={question.setMaxChars}
+              onChange={(e) =>
+                setQuestion({
+                  ...question,
+                  setMaxChars: e.target.checked,
+                  maxCharsAllowed: e.target.checked ? 1 : null,
+                })
+              }
+            >
+              Set Maximum Characters Limit
+            </Checkbox>
+          </FormControl>
+          {question.setMaxChars && (
+            <FormControl id="maxCharsAllowed" isRequired marginTop={2}>
+              <FormLabel>Maximum Characters</FormLabel>
+              <Input
+                type="number"
+                placeholder="Enter maximum characters (1-5000)"
+                value={question.maxCharsAllowed || ""}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  if (value > 0 && value <= 5000) {
+                    setQuestion({ ...question, maxCharsAllowed: value });
+                  }
+                }}
+              />
+            </FormControl>
+          )}
         </>
       )}
       {(question.questionType === "MultipleChoice" ||
@@ -253,6 +283,8 @@ function AddQuestionForm({ testId, toast, callback }) {
     correctAnswers: [],
     imageUrl: "",
     subQuestions: [],
+    setMaxChars: false,
+    maxCharsAllowed: null,
   });
 
   const handleAddQuestion = async () => {
@@ -273,6 +305,8 @@ function AddQuestionForm({ testId, toast, callback }) {
         correctAnswers: [],
         imageUrl: "",
         subQuestions: [],
+        setMaxChars: false,
+        maxCharsAllowed: null,
       });
       callback();
     } catch (error) {
