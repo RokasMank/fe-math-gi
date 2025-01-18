@@ -47,7 +47,13 @@ function QuestionView({ question, onRemove }) {
               </VStack>
             </Box>
           )}
+          {question.maxCharsAllowed ? (
+            <Box marginTop={2}>
+              <Text fontWeight="bold">Maximum answer characters</Text>
 
+              <Text>{question.maxCharsAllowed}</Text>
+            </Box>
+          ) : null}
           {/* Display Subquestions */}
           {question.subQuestions?.length > 0 && (
             <Box marginTop={4}>

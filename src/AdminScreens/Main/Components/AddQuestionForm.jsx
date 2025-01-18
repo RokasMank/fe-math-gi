@@ -137,7 +137,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           <FormControl id="correctAnswers">
             <FormLabel>Correct Answer</FormLabel>
             <Textarea
-              placeholder="Enter the correct answer (one per line)"
+              placeholder="Enter the correct answer"
               value={question.correctAnswers.join("\n")}
               onChange={(e) =>
                 setQuestion({
@@ -178,7 +178,9 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           </FormControl>
           {question.setMaxChars && (
             <FormControl id="maxCharsAllowed" isRequired marginTop={2}>
-              <FormLabel>Maximum Characters</FormLabel>
+              <FormLabel>
+                Maximum Characters (think about punctuation too!! (,.))
+              </FormLabel>
               <Input
                 type="number"
                 placeholder="Enter maximum characters (1-5000)"

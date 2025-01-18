@@ -12,8 +12,10 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import api from "../../apiClient";
+import { useNavigate } from "react-router-dom";
 
 const CreateTestAssignmentScreen = () => {
+  const navigate = useNavigate();
   const [tests, setTests] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -175,6 +177,7 @@ const CreateTestAssignmentScreen = () => {
         duration: 5000,
         isClosable: true,
       });
+      navigate("/admin/landing");
     } catch (error) {
       console.error("Error publishing assignment:", error);
       toast({

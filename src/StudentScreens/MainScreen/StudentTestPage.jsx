@@ -61,8 +61,8 @@ const StudentTestPage = () => {
         answers: answersToSubmit,
       });
       toast({
-        title: "Answer Submitted",
-        description: "Your answers have been saved.",
+        title: "Atsakymas pateiktas",
+        description: "Atsakymas pateiktas sėkmingai",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -115,14 +115,15 @@ const StudentTestPage = () => {
 
     try {
       const response = await api.post(`/TestSession/${id}/complete`);
-      toast({
-        title: "Testas baigtas",
-        description: `Taškai: ${response.data.totalScore}`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-      navigate(`/results/${id}`);
+      // toast({
+      //   title: "Testas baigtas",
+      //   description: `Taškai: ${response.data.totalScore}`,
+      //   status: "success",
+      //   duration: 5000,
+      //   isClosable: true,
+      // });
+      //navigate(`/results/${id}`);
+      navigate("/main");
     } catch (error) {
       console.error("Error completing test:", error);
       toast({
@@ -203,6 +204,7 @@ const StudentTestPage = () => {
           )}
           {question.questionType === 0 && (
             <Textarea
+              maxLength={question.maxCharsAllowed}
               placeholder="Įrašykite atsakymą"
               value={selectedAnswers[question.id]?.[0] || ""}
               onChange={(e) =>
@@ -269,7 +271,9 @@ const StudentTestPage = () => {
             key={index}
             colorScheme={index === currentQuestionIndex ? "blue" : "gray"}
             size="sm"
-            onClick={() => setCurrentQuestionIndex(index)}
+            borderRadius={50}
+            //onClick={() => setCurrentQuestionIndex(index)}
+            disabled
           >
             {index + 1}
           </Button>

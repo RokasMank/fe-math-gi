@@ -115,7 +115,7 @@ const TestResultsPage = ({ isTeacherView }) => {
         {results.title}
       </Heading>
       <Text fontSize="md" marginBottom={6}>
-        Score: {results.scoreEarned}/{results.totalScore}
+        Taškai: {results.scoreEarned}/{results.totalScore}
       </Text>
       <Divider marginBottom={6} />
       <VStack spacing={6} align="start">
