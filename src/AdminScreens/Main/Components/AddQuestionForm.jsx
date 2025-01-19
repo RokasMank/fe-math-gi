@@ -210,19 +210,27 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                 />
                 <Checkbox
                   isChecked={question.correctAnswers.includes(option)}
-                  onChange={() =>
-                    setQuestion({
-                      ...question,
-                      correctAnswers: question.correctAnswers.includes(option)
-                        ? question.correctAnswers.filter(
-                            (ans) => ans !== option
-                          )
-                        : [...question.correctAnswers, option],
-                    })
-                  }
+                  onChange={() => {
+                    if (question.questionType === "SingleChoice") {
+                      setQuestion({
+                        ...question,
+                        correctAnswers: [option], // Only one correct answer allowed
+                      });
+                    } else {
+                      setQuestion({
+                        ...question,
+                        correctAnswers: question.correctAnswers.includes(option)
+                          ? question.correctAnswers.filter(
+                              (ans) => ans !== option
+                            )
+                          : [...question.correctAnswers, option],
+                      });
+                    }
+                  }}
                 >
                   Mark as Correct
                 </Checkbox>
+
                 <IconButton
                   aria-label="Remove option"
                   icon={<FaTrash />}
