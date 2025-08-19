@@ -47,6 +47,12 @@ function QuestionView({ question, onRemove }) {
               </VStack>
             </Box>
           )}
+          {question.questionType === 4 && (
+            <Box marginTop={2}>
+              <Text fontWeight="bold">Text with Blanks:</Text>
+              <Text>{question.textWithBlanks}</Text>
+            </Box>
+          )}
           {question.maxCharsAllowed ? (
             <Box marginTop={2}>
               <Text fontWeight="bold">Maximum answer characters</Text>

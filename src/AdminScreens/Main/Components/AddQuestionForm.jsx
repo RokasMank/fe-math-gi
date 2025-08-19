@@ -58,6 +58,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           imageUrl: "",
           subQuestions: [],
           allowsEmptyAnswer: false,
+          textWithBlanks: "", // Pridedame textWithBlanks
         },
       ],
     });
@@ -76,6 +77,35 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
     setQuestion({
       ...question,
       subQuestions: updatedSubQuestions,
+    });
+  };
+
+  // Funkcija, kuri skaičiuoja tuščių laukų skaičių tekste
+  const countBlank = (text) => {
+    return (text.match(/\[\[\]\]/g) || []).length;
+  };
+
+  // Funkcija, kuri valdo teisingų atsakymų įvestį FillInBlanks tipo klausimams
+  const handleCorrectAnswerChange = (index, value) => {
+    const updatedCorrectAnswers = [...question.correctAnswers];
+    updatedCorrectAnswers[index] = value;
+    setQuestion({
+      ...question,
+      correctAnswers: updatedCorrectAnswers,
+    });
+  };
+
+  // Funkcija, kuri sinchronizuoja teisingų atsakymų masyvą su tuščių laukų skaičiumi
+  const handleTextWithBlanksChange = (value) => {
+    const blankCount = countBlank(value);
+    const updatedCorrectAnswers = question.correctAnswers.slice(0, blankCount);
+    while (updatedCorrectAnswers.length < blankCount) {
+      updatedCorrectAnswers.push("");
+    }
+    setQuestion({
+      ...question,
+      textWithBlanks: value,
+      correctAnswers: updatedCorrectAnswers,
     });
   };
 
@@ -105,8 +135,18 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           }
         />
       </FormControl>
+      {/* <FormControl id="explanation">
+        <FormLabel>Explanation (Optional)</FormLabel>
+        <Textarea
+          placeholder="Enter explanation for the question or correct answer"
+          value={question.explanation || ""}
+          onChange={(e) =>
+            setQuestion({ ...question, explanation: e.target.value })
+          }
+        />
+      </FormControl> */}
       <HStack spacing={4}>
-        <FormControl id="points">
+        <FormControl isRequired id="points">
           <FormLabel>Points</FormLabel>
           <Input
             type="number"
@@ -122,13 +162,20 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           <Select
             placeholder="Select question type"
             value={question.questionType}
-            onChange={(e) =>
-              setQuestion({ ...question, questionType: e.target.value })
-            }
+            onChange={(e) => {
+              setQuestion({
+                ...question,
+                questionType: e.target.value,
+                options: [],
+                correctAnswers: [],
+                textWithBlanks: "",
+              });
+            }}
           >
             <option value="MultipleChoice">Multiple Choice</option>
             <option value="SingleChoice">Single Choice</option>
             <option value="OpenEnded">Open Ended</option>
+            <option value="FillInBlanks">Fill In Blank Spaces</option>
           </Select>
         </FormControl>
       </HStack>
@@ -214,7 +261,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                     if (question.questionType === "SingleChoice") {
                       setQuestion({
                         ...question,
-                        correctAnswers: [option], // Only one correct answer allowed
+                        correctAnswers: [option], // Tik vienas teisingas atsakymas
                       });
                     } else {
                       setQuestion({
@@ -230,7 +277,6 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                 >
                   Mark as Correct
                 </Checkbox>
-
                 <IconButton
                   aria-label="Remove option"
                   icon={<FaTrash />}
@@ -249,6 +295,52 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
             </Button>
           </VStack>
         </FormControl>
+      )}
+      {question.questionType === "FillInBlanks" && (
+        <>
+          <FormControl id="textWithBlanks" isRequired>
+            <FormLabel>Text with Blank Spaces</FormLabel>
+            <Textarea
+              placeholder="Enter text with blanks (use [[]] for blanks, e.g., 'Sostinė yra [[]]. Šalis yra [[]].')"
+              value={question.textWithBlanks || ""}
+              onChange={(e) => handleTextWithBlanksChange(e.target.value)}
+            />
+          </FormControl>
+          <FormControl id="correctAnswers">
+            <FormLabel>Correct Answers for Blanks</FormLabel>
+            <VStack spacing={2}>
+              {question.correctAnswers.map((answer, index) => (
+                <HStack key={index}>
+                  <Input
+                    placeholder={`Answer for blank ${index + 1}`}
+                    value={answer}
+                    onChange={(e) =>
+                      handleCorrectAnswerChange(index, e.target.value)
+                    }
+                  />
+                  <IconButton
+                    aria-label="Remove answer"
+                    icon={<FaTrash />}
+                    colorScheme="red"
+                    onClick={() => {
+                      const updatedAnswers = question.correctAnswers.filter(
+                        (_, i) => i !== index
+                      );
+                      setQuestion({
+                        ...question,
+                        correctAnswers: updatedAnswers,
+                      });
+                    }}
+                    isDisabled={
+                      question.correctAnswers.length <=
+                      countBlank(question.textWithBlanks)
+                    }
+                  />
+                </HStack>
+              ))}
+            </VStack>
+          </FormControl>
+        </>
       )}
       <VStack spacing={4} align="start" marginTop={4}>
         <FormLabel>Subquestions</FormLabel>
@@ -295,9 +387,42 @@ function AddQuestionForm({ testId, toast, callback }) {
     subQuestions: [],
     setMaxChars: false,
     maxCharsAllowed: null,
+    textWithBlanks: "",
   });
 
   const handleAddQuestion = async () => {
+    // Papildoma validacija FillInBlanks tipo klausimams
+    if (question.questionType === "FillInBlanks") {
+      const countBlank = (text) => {
+        return (text.match(/\[\[\]\]/g) || []).length;
+      };
+      const blankCount = countBlank(question.textWithBlanks);
+      if (blankCount === 0) {
+        toast({
+          title: "Error Adding Question",
+          description: "Text with blanks must contain at least one [[]].",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+      if (
+        question.correctAnswers.length !== blankCount ||
+        question.correctAnswers.some((answer) => !answer.trim())
+      ) {
+        toast({
+          title: "Error Adding Question",
+          description:
+            "Please provide a correct answer for each blank space ([[]]).",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+    }
+
     try {
       await api.post(`/Question/${testId}/questions`, question);
       toast({
@@ -317,6 +442,7 @@ function AddQuestionForm({ testId, toast, callback }) {
         subQuestions: [],
         setMaxChars: false,
         maxCharsAllowed: null,
+        textWithBlanks: "",
       });
       callback();
     } catch (error) {

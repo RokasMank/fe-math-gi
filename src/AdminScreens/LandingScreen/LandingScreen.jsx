@@ -29,9 +29,9 @@ function LandingScreen() {
         <Button
           colorScheme="teal"
           size="lg"
-          onClick={() => navigate("/admin/add-student")}
+          onClick={() => navigate("/admin/manage-students")}
         >
-          Add Student
+          Manage Students
         </Button>
 
         {/* Button to Navigate to Create Test Screen */}

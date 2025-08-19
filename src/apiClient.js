@@ -8,18 +8,21 @@ const baseURL = isLocalhost
 
 const apiClient = axios.create({
   baseURL: baseURL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
-// Add a request interceptor to include authorization token or handle other logic
+// Add a request interceptor to include authorization token and log headers
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token"); // Example: Get token from localStorage
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
+    // Only set Content-Type for non-FormData requests
+    if (!(config.data instanceof FormData)) {
+      config.headers["Content-Type"] = "application/json";
+    }
+    console.log("Request URL:", config.baseURL + config.url); // Debug log
+    console.log("Request Headers:", config.headers); // Debug log
     return config;
   },
   (error) => Promise.reject(error)
@@ -30,7 +33,6 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized access (e.g., redirect to login)
       console.error("Unauthorized access, redirecting to login...");
       // Example: window.location.href = "/login";
     }
@@ -40,7 +42,7 @@ apiClient.interceptors.response.use(
 
 const api = {
   get: (url, params) => apiClient.get(url, { params }),
-  post: (url, data) => apiClient.post(url, data),
+  post: (url, data, config) => apiClient.post(url, data, config),
   put: (url, data) => apiClient.put(url, data),
   delete: (url) => apiClient.delete(url),
 };

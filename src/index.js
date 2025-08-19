@@ -11,7 +11,7 @@ import AdminLoginScreen from "./AdminScreens/LoginScreen/LoginScreen.jsx";
 import StudentMain from "./StudentScreens/MainScreen/StudentMain.jsx";
 import LandingScreen from "./AdminScreens/LandingScreen/LandingScreen.jsx";
 import AdminCreateScreen from "./AdminScreens/Main/AdminCreateScreen.jsx";
-import CreateStudentScreen from "./AdminScreens/Main/CreateStudentScreen.jsx";
+import ManageStudentScreen from "./AdminScreens/Main/ManageStudentScreen.jsx";
 import CreateTestScreen from "./AdminScreens/Main/CreateTestScreen.jsx";
 import AddTestTestQuestionsScreen from "./AdminScreens/Main/AddTestQuestionsScreen.jsx";
 import AllTestsScreen from "./AdminScreens/Main/AllTestsScreen.jsx";
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
     children: [
       { path: "landing", element: <LandingScreen /> },
       { path: "create", element: <AdminCreateScreen /> },
-      { path: "add-student", element: <CreateStudentScreen /> },
+      { path: "manage-students", element: <ManageStudentScreen /> },
       { path: "create-test", element: <CreateTestScreen /> },
       {
         path: "create-test/add-questions/:testId",

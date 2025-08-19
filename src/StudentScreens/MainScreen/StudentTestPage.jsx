@@ -3,6 +3,7 @@ import {
   Box,
   Heading,
   VStack,
+  HStack,
   Text,
   Button,
   Spinner,
@@ -11,7 +12,6 @@ import {
   CheckboxGroup,
   Checkbox,
   Textarea,
-  HStack,
   useToast,
   Image,
 } from "@chakra-ui/react";
@@ -24,11 +24,13 @@ const StudentTestPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes in seconds
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { testId } = location.state || {};
 
+  // Fetch test session
   useEffect(() => {
     const fetchTestSession = async () => {
       try {
@@ -50,6 +52,31 @@ const StudentTestPage = () => {
 
     fetchTestSession();
   }, [testId, toast]);
+
+  // Timer logic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timer);
+          handleCompleteTest();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup on unmount
+  }, []);
+
+  // Format time as MM:SS
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
   const handleAnswerSubmit = async (isFinal) => {
     const question = test.questions[currentQuestionIndex];
@@ -110,19 +137,10 @@ const StudentTestPage = () => {
 
   const handleCompleteTest = async () => {
     const confirmFinish = window.confirm("Ar tikrai norite baigti testą?");
-
     if (!confirmFinish) return;
 
     try {
-      const response = await api.post(`/TestSession/${id}/complete`);
-      // toast({
-      //   title: "Testas baigtas",
-      //   description: `Taškai: ${response.data.totalScore}`,
-      //   status: "success",
-      //   duration: 5000,
-      //   isClosable: true,
-      // });
-      //navigate(`/results/${id}`);
+      await api.post(`/TestSession/${id}/complete`);
       navigate("/main");
     } catch (error) {
       console.error("Error completing test:", error);
@@ -155,89 +173,137 @@ const StudentTestPage = () => {
 
   const question = test.questions[currentQuestionIndex];
 
-  const renderQuestion = (question) => (
-    <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
-      <Text fontWeight="bold" marginBottom={2} fontSize="14pt">
-        {question.text}
-      </Text>
-      {question.imageUrl && <Image src={question.imageUrl} />}
+  const countBlanks = (text) => {
+    return (text.match(/\[\[\]\]/g) || []).length;
+  };
 
-      {!question.subQuestions?.length && question.correctAnswers.length > 0 && (
-        <>
-          {question.questionType === 1 && (
-            <CheckboxGroup
-              value={selectedAnswers[question.id] || []}
-              onChange={(values) =>
-                setSelectedAnswers((prev) => ({
-                  ...prev,
-                  [question.id]: values,
-                }))
-              }
-            >
-              <VStack align="start">
-                {question.options.map((option, index) => (
-                  <Checkbox key={index} value={option}>
-                    {option}
-                  </Checkbox>
+  const renderQuestion = (question) => {
+    const blankCount =
+      question.questionType === 3 ? countBlanks(question.textWithBlanks) : 0;
+
+    return (
+      <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
+        <Text fontWeight="bold" marginBottom={2} fontSize="14pt">
+          {question.text}
+        </Text>
+        {question.imageUrl && (
+          <Image src={question.imageUrl} marginBottom={4} />
+        )}
+
+        {!question.subQuestions?.length && (
+          <>
+            {/* MultipleChoice (questionType === 2) */}
+            {question.questionType === 2 && question.options?.length > 0 && (
+              <CheckboxGroup
+                value={selectedAnswers[question.id] || []}
+                onChange={(values) =>
+                  setSelectedAnswers((prev) => ({
+                    ...prev,
+                    [question.id]: values,
+                  }))
+                }
+              >
+                <VStack align="start">
+                  {question.options.map((option, index) => (
+                    <Checkbox key={index} value={option}>
+                      {option}
+                    </Checkbox>
+                  ))}
+                </VStack>
+              </CheckboxGroup>
+            )}
+
+            {/* SingleChoice (questionType === 3) */}
+            {question.questionType === 3 && question.options?.length > 0 && (
+              <RadioGroup
+                value={selectedAnswers[question.id]?.[0] || ""}
+                onChange={(value) =>
+                  setSelectedAnswers((prev) => ({
+                    ...prev,
+                    [question.id]: [value],
+                  }))
+                }
+              >
+                <VStack align="start">
+                  {question.options.map((option, index) => (
+                    <Radio key={index} value={option}>
+                      {option}
+                    </Radio>
+                  ))}
+                </VStack>
+              </RadioGroup>
+            )}
+
+            {/* OpenEnded (questionType === 1) */}
+            {question.questionType === 1 && (
+              <Textarea
+                maxLength={question.maxCharsAllowed}
+                placeholder="Įrašykite atsakymą"
+                value={selectedAnswers[question.id]?.[0] || ""}
+                onChange={(e) =>
+                  setSelectedAnswers((prev) => ({
+                    ...prev,
+                    [question.id]: [e.target.value],
+                  }))
+                }
+              />
+            )}
+
+            {/* FillInBlanks (questionType === 4) */}
+            {question.questionType === 4 && question.textWithBlanks && (
+              <VStack align="start" spacing={4}>
+                <Text>{question.textWithBlanks}</Text>
+                {Array.from({ length: blankCount }).map((_, index) => (
+                  <Textarea
+                    key={index}
+                    placeholder={`Answer for blank ${index + 1}`}
+                    value={selectedAnswers[question.id]?.[index] || ""}
+                    onChange={(e) =>
+                      setSelectedAnswers((prev) => {
+                        const updatedAnswers = [
+                          ...(prev[question.id] || Array(blankCount).fill("")),
+                        ];
+                        updatedAnswers[index] = e.target.value;
+                        return {
+                          ...prev,
+                          [question.id]: updatedAnswers,
+                        };
+                      })
+                    }
+                  />
                 ))}
               </VStack>
-            </CheckboxGroup>
-          )}
-          {question.questionType === 2 && (
-            <RadioGroup
-              value={selectedAnswers[question.id]?.[0] || ""}
-              onChange={(value) =>
-                setSelectedAnswers((prev) => ({
-                  ...prev,
-                  [question.id]: [value],
-                }))
-              }
-            >
-              <VStack align="start">
-                {question.options.map((option, index) => (
-                  <Radio key={index} value={option}>
-                    {option}
-                  </Radio>
-                ))}
-              </VStack>
-            </RadioGroup>
-          )}
-          {question.questionType === 0 && (
-            <Textarea
-              maxLength={question.maxCharsAllowed}
-              placeholder="Įrašykite atsakymą"
-              value={selectedAnswers[question.id]?.[0] || ""}
-              onChange={(e) =>
-                setSelectedAnswers((prev) => ({
-                  ...prev,
-                  [question.id]: [e.target.value],
-                }))
-              }
-            />
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
 
-      {question.subQuestions?.length > 0 && (
-        <VStack align="start" marginTop={4}>
-          {question.subQuestions.map((subQuestion, index) => (
-            <Box key={index} marginTop={2}>
-              {renderQuestion(subQuestion)}
-            </Box>
-          ))}
-        </VStack>
-      )}
-    </Box>
-  );
+        {/* Subquestions */}
+        {question.subQuestions?.length > 0 && (
+          <VStack align="start" marginTop={4}>
+            {question.subQuestions.map((subQuestion, index) => (
+              <Box key={index} marginTop={2}>
+                {renderQuestion(subQuestion)}
+              </Box>
+            ))}
+          </VStack>
+        )}
+      </Box>
+    );
+  };
 
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={4}>
         {test.title}
       </Heading>
-      <Text fontSize="md" marginBottom={6}>
-        Klausimas {currentQuestionIndex + 1} iš {test.questions.length}
-      </Text>
+      <HStack justify="space-between" marginBottom={6}>
+        <Text fontSize="md">
+          Klausimas {currentQuestionIndex + 1} iš {test.questions.length}
+        </Text>
+        <Text fontSize="md" fontWeight="bold">
+          Likęs laikas: {formatTime(timeLeft)}
+        </Text>
+      </HStack>
       {renderQuestion(question)}
       <HStack spacing={4}>
         <Button
@@ -255,9 +321,11 @@ const StudentTestPage = () => {
             )
           }
           isDisabled={
-            !selectedAnswers[question.id]?.length &&
+            !selectedAnswers[question.id]?.some((ans) => ans.trim()) &&
             !question.subQuestions?.length &&
-            question.correctAnswers.length > 0
+            (question.questionType !== 3 ||
+              selectedAnswers[question.id]?.length ===
+                countBlanks(question.textWithBlanks))
           }
         >
           {currentQuestionIndex + 1 < test.questions.length
@@ -272,7 +340,6 @@ const StudentTestPage = () => {
             colorScheme={index === currentQuestionIndex ? "blue" : "gray"}
             size="sm"
             borderRadius={50}
-            //onClick={() => setCurrentQuestionIndex(index)}
             disabled
           >
             {index + 1}
