@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  VStack,
-  Spinner,
-  Text,
-  HStack,
-  Divider,
-  Button,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, Text, HStack, Divider, Button } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
+import LoadingSpinner from "../../Common/LoadingSpinner";
+import { getStatusText, getStatusColor } from "../../utils/assignmentStatus";
+import { useAppToast } from "../../utils/useAppToast";
 
 const ViewAssignmentDetailsScreen = () => {
   const { id } = useParams();
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +20,7 @@ const ViewAssignmentDetailsScreen = () => {
         setAssignment(response.data);
       } catch (error) {
         console.error("Error fetching assignment details:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch assignment details.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti priskyrimo detalių.", "error");
       } finally {
         setLoading(false);
       }
@@ -44,125 +31,64 @@ const ViewAssignmentDetailsScreen = () => {
 
   const handleDeleteAssignment = async () => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this assignment? This action cannot be undone."
+      "Ar tikrai norite ištrinti šį priskyrimą? Šio veiksmo negalima atšaukti."
     );
 
     if (!confirmDelete) return;
 
     try {
       await api.delete(`/TestAssignment/${id}`);
-      toast({
-        title: "Success",
-        description: "Assignment deleted successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Priskyrimas sėkmingai ištrintas.");
       navigate("/admin/view-assignments");
     } catch (error) {
       console.error("Error deleting assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete assignment. Ensure it is not published.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko ištrinti priskyrimo. Įsitikinkite, kad jis nėra paskelbtas.", "error");
     }
   };
 
   const handlePublishAssignment = async () => {
     try {
       await api.post(`/TestAssignment/${id}/publish`);
-      toast({
-        title: "Success",
-        description: "Assignment published successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Priskyrimas sėkmingai paskelbtas.");
       navigate(`/admin/view-assignments`);
     } catch (error) {
       console.error("Error publishing assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish assignment.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko paskelbti priskyrimo.", "error");
     }
   };
 
   const handleUnpublishAssignment = async () => {
     try {
       await api.post(`/TestAssignment/${id}/unpublish`);
-      toast({
-        title: "Success",
-        description: "Assignment unpublished successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Priskyrimo skelbimas atšauktas.");
       navigate("/admin/view-assignments");
     } catch (error) {
       console.error("Error unpublishing assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to unpublish assignment.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko atšaukti priskyrimo skelbimo.", "error");
     }
   };
 
   const handleFinishAssignment = async () => {
     const confirmFinish = window.confirm(
-      "Are you sure you want to finish this assignment? This action is irreversible."
+      "Ar tikrai norite baigti šį priskyrimą? Šio veiksmo negalima atšaukti."
     );
 
     if (!confirmFinish) return;
 
     try {
       await api.post(`/TestAssignment/${id}/finish`);
-      toast({
-        title: "Success",
-        description: "Assignment marked as finished successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Priskyrimas sėkmingai pažymėtas kaip baigtas.");
       navigate(`/admin/view-assignments`);
     } catch (error) {
       console.error("Error finishing assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to finish assignment.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko baigti priskyrimo.", "error");
     }
   };
-
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
-  }
 
   const handleDownloadResults = async () => {
     try {
       const response = await api.get(`/TestAssignment/${id}/download-results`, {
-        responseType: "blob", // To handle binary data
+        responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -171,54 +97,21 @@ const ViewAssignmentDetailsScreen = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast({
-        title: "Success",
-        description: "Results downloaded successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Rezultatai sėkmingai atsisiųsti.");
     } catch (error) {
       console.error("Error downloading results:", error);
-      toast({
-        title: "Error",
-        description: "Failed to download results.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko atsisiųsti rezultatų.", "error");
     }
   };
 
-  if (!assignment) {
-    return <Text>No assignment found.</Text>;
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 0:
-        return "gray.400";
-      case 1:
-        return "yellow.400";
-      case 2:
-        return "green.400";
-      default:
-        return "gray.400";
-    }
-  };
+  if (!assignment) {
+    return <Text>Priskyrimas nerastas.</Text>;
+  }
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 0:
-        return "Draft";
-      case 1:
-        return "Published";
-      case 2:
-        return "Finished";
-      default:
-        return "NA";
-    }
-  };
 
   return (
     <Box padding={6}>
@@ -230,12 +123,12 @@ const ViewAssignmentDetailsScreen = () => {
       </Text>
       <Divider marginBottom={4} />
       <Heading size="md" marginBottom={4}>
-        Details
+        Detalės
       </Heading>
       <VStack align="start" spacing={2}>
-        <Text>Class: {assignment.class}</Text>
+        <Text>Klasė: {assignment.class}</Text>
         <Text>
-          Status:{" "}
+          Būsena:{" "}
           <Text
             as="span"
             fontWeight="bold"
@@ -248,22 +141,22 @@ const ViewAssignmentDetailsScreen = () => {
             {getStatusText(assignment.testAssignmentStatus)}
           </Text>
         </Text>
-        <Text>Test: {assignment.test.title}</Text>
-        <Text>Test Description: {assignment.test.description}</Text>
+        <Text>Testas: {assignment.test.title}</Text>
+        <Text>Testo aprašymas: {assignment.test.description}</Text>
       </VStack>
       <Divider marginTop={6} marginBottom={4} />
       <Heading size="md" marginBottom={4}>
-        Assigned Students
+        Priskirti mokiniai
       </Heading>
       <VStack align="start" spacing={2}>
         {assignment.studentSessions.length > 0 ? (
           assignment.studentSessions.map((student, index) => (
             <Box key={index} borderWidth={1} borderRadius="md" padding={3}>
-              <Text>Code: {student.code}</Text>
-              <Text>Class: {student.studentClass}</Text>
-              <Text>Gender: {student.gender}</Text>
+              <Text>Kodas: {student.code}</Text>
+              <Text>Klasė: {student.studentClass}</Text>
+              <Text>Lytis: {student.gender}</Text>
               <Text>
-                Status:{" "}
+                Būsena:{" "}
                 <Text
                   as="span"
                   fontWeight="bold"
@@ -276,16 +169,16 @@ const ViewAssignmentDetailsScreen = () => {
                   }
                 >
                   {student.sessionStatus === 0
-                    ? "Draft"
+                    ? "Juodraštis"
                     : student.sessionStatus === 1
-                    ? "In Progress"
-                    : "Finished"}
+                    ? "Vyksta"
+                    : "Baigtas"}
                 </Text>
               </Text>
             </Box>
           ))
         ) : (
-          <Text>No students assigned to this assignment.</Text>
+          <Text>Šiam priskyrimui mokinių nėra.</Text>
         )}
       </VStack>
 
@@ -294,7 +187,7 @@ const ViewAssignmentDetailsScreen = () => {
         colorScheme="green"
         onClick={() => navigate(`/admin/test/${assignment.testId}`)}
       >
-        View test
+        Peržiūrėti testą
       </Button>
 
       <Divider marginTop={6} marginBottom={4} />
@@ -302,20 +195,20 @@ const ViewAssignmentDetailsScreen = () => {
         {assignment.testAssignmentStatus === 0 && (
           <>
             <Button colorScheme="green" onClick={handlePublishAssignment}>
-              Publish Assignment
+              Paskelbti priskyrimą
             </Button>
             <Button colorScheme="red" onClick={handleDeleteAssignment}>
-              Delete Assignment
+              Ištrinti priskyrimą
             </Button>
           </>
         )}
         {assignment.testAssignmentStatus === 1 && (
           <>
             <Button colorScheme="yellow" onClick={handleUnpublishAssignment}>
-              Unpublish Assignment
+              Atšaukti skelbimą
             </Button>
             <Button colorScheme="blue" onClick={handleFinishAssignment}>
-              Finish Assignment
+              Baigti priskyrimą
             </Button>
           </>
         )}
@@ -323,10 +216,10 @@ const ViewAssignmentDetailsScreen = () => {
           colorScheme="blue"
           onClick={() => navigate("/admin/view-assignments")}
         >
-          Back to Assignments
+          Grįžti į priskyrimus
         </Button>
         <Button colorScheme="teal" onClick={handleDownloadResults}>
-          Download Results
+          Atsisiųsti rezultatus
         </Button>
       </HStack>
     </Box>

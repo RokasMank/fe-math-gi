@@ -9,10 +9,10 @@ import {
   Textarea,
   HStack,
   Text,
-  useToast,
 } from "@chakra-ui/react";
 import api from "../../apiClient";
 import { useNavigate } from "react-router-dom";
+import { useAppToast } from "../../utils/useAppToast";
 
 const CreateTestAssignmentScreen = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const CreateTestAssignmentScreen = () => {
   const [assignmentId, setAssignmentId] = useState(null); // Store the created assignment ID
   const [studentCode, setStudentCode] = useState("");
   const [students, setStudents] = useState([]); // List of added students
-  const toast = useToast();
+  const toast = useAppToast();
 
   useEffect(() => {
     const fetchPublishedTests = async () => {
@@ -33,13 +33,7 @@ const CreateTestAssignmentScreen = () => {
         setTests(response.data);
       } catch (error) {
         console.error("Error fetching tests:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch tests.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti testų.", "error");
       }
     };
 
@@ -48,13 +42,7 @@ const CreateTestAssignmentScreen = () => {
 
   const handleCreateOrUpdateAssignment = async () => {
     if (!title.trim() || !selectedTest || !selectedClass) {
-      toast({
-        title: "Error",
-        description: "Please fill out all required fields.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Prašome užpildyti visus privalomus laukus.", "error");
       return;
     }
 
@@ -69,13 +57,7 @@ const CreateTestAssignmentScreen = () => {
           description,
         });
 
-        toast({
-          title: "Success",
-          description: "Assignment updated successfully.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Sėkmė", "Priskyrimas sėkmingai atnaujintas.");
       } else {
         // Create assignment
         response = await api.post("/TestAssignment/create", {
@@ -88,36 +70,17 @@ const CreateTestAssignmentScreen = () => {
         const { assignmentId } = response.data;
         setAssignmentId(assignmentId); // Store assignment ID
 
-        toast({
-          title: "Success",
-          description:
-            "Assignment created successfully. You can now add students.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Sėkmė", "Priskyrimas sėkmingai sukurtas. Dabar galite pridėti mokinius.");
       }
     } catch (error) {
       console.error("Error creating/updating assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create or update assignment.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko sukurti arba atnaujinti priskyrimo.", "error");
     }
   };
 
   const handleAddStudent = async () => {
     if (!studentCode.trim()) {
-      toast({
-        title: "Error",
-        description: "Student code cannot be empty.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Mokinio kodas negali būti tuščias.", "error");
       return;
     }
 
@@ -134,13 +97,7 @@ const CreateTestAssignmentScreen = () => {
 
       // Check if the student is already in the local list
       if (students.some((student) => student.code === code)) {
-        toast({
-          title: "Error",
-          description: "Student is already added.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Mokinys jau pridėtas.", "error");
         return;
       }
 
@@ -148,45 +105,21 @@ const CreateTestAssignmentScreen = () => {
       setStudents([...students, { code, studentClass, gender }]);
       setStudentCode(""); // Clear the input field
 
-      toast({
-        title: "Success",
-        description: "Student added to the assignment.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Mokinys pridėtas prie priskyrimo.");
     } catch (error) {
       console.error("Error adding student:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add student. Ensure the code is valid.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko pridėti mokinio. Patikrinkite, ar kodas teisingas.", "error");
     }
   };
 
   const handlePublishAssignment = async () => {
     try {
       await api.post(`/TestAssignment/${assignmentId}/publish`);
-      toast({
-        title: "Success",
-        description: "Assignment published successfully.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", "Priskyrimas sėkmingai paskelbtas.");
       navigate("/admin/landing");
     } catch (error) {
       console.error("Error publishing assignment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish assignment.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko paskelbti priskyrimo.", "error");
     }
   };
 
@@ -200,36 +133,24 @@ const CreateTestAssignmentScreen = () => {
       // Remove the student from the local list
       setStudents(students.filter((student) => student.code !== studentCode));
 
-      toast({
-        title: "Success",
-        description: `Student ${studentCode} removed from the assignment.`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", `Mokinys ${studentCode} pašalintas iš priskyrimo.`);
     } catch (error) {
       console.error("Error removing student:", error);
-      toast({
-        title: "Error",
-        description: `Failed to remove student ${studentCode}.`,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", `Nepavyko pašalinti mokinio ${studentCode}.`, "error");
     }
   };
 
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={6}>
-        {assignmentId ? "Update Assignment" : "Create Assignment"}
+        {assignmentId ? "Atnaujinti priskyrimą" : "Sukurti priskyrimą"}
       </Heading>
       <VStack spacing={4} align="start">
         {/* Title */}
         <Box width="100%">
-          <Heading size="sm">Assignment Title:</Heading>
+          <Heading size="sm">Priskyrimo pavadinimas:</Heading>
           <Input
-            placeholder="Enter assignment title"
+            placeholder="Įveskite priskyrimo pavadinimą"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -237,9 +158,9 @@ const CreateTestAssignmentScreen = () => {
 
         {/* Description */}
         <Box width="100%">
-          <Heading size="sm">Assignment Description:</Heading>
+          <Heading size="sm">Priskyrimo aprašymas:</Heading>
           <Textarea
-            placeholder="Enter assignment description"
+            placeholder="Įveskite priskyrimo aprašymą"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -247,9 +168,9 @@ const CreateTestAssignmentScreen = () => {
 
         {/* Select Test */}
         <Box width="100%">
-          <Heading size="sm">Select Test:</Heading>
+          <Heading size="sm">Pasirinkti testą:</Heading>
           <Select
-            placeholder="Select a test"
+            placeholder="Pasirinkite testą"
             value={selectedTest}
             onChange={(e) => setSelectedTest(e.target.value)}
           >
@@ -263,38 +184,38 @@ const CreateTestAssignmentScreen = () => {
 
         {/* Select Class */}
         <Box width="100%">
-          <Heading size="sm">Select Class:</Heading>
+          <Heading size="sm">Pasirinkti klasę:</Heading>
           <Select
-            placeholder="Select a class"
+            placeholder="Pasirinkite klasę"
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
           >
-            <option value="1">Class 1</option>
-            <option value="2">Class 2</option>
-            <option value="3">Class 3</option>
-            <option value="4">Class 4</option>
+            <option value="1">1 klasė</option>
+            <option value="2">2 klasė</option>
+            <option value="3">3 klasė</option>
+            <option value="4">4 klasė</option>
           </Select>
         </Box>
 
         {/* Create/Update Assignment Button */}
         <Button colorScheme="blue" onClick={handleCreateOrUpdateAssignment}>
-          {assignmentId ? "Update Assignment" : "Create Assignment"}
+          {assignmentId ? "Atnaujinti priskyrimą" : "Sukurti priskyrimą"}
         </Button>
 
         {/* Add Students Section */}
         {assignmentId && (
           <Box width="100%" marginTop={6}>
             <Heading size="md" marginBottom={4}>
-              Add Students to Assignment
+              Pridėti mokinius prie priskyrimo
             </Heading>
             <HStack>
               <Input
-                placeholder="Enter student code"
+                placeholder="Įveskite mokinio kodą"
                 value={studentCode}
                 onChange={(e) => setStudentCode(e.target.value)}
               />
               <Button colorScheme="teal" onClick={handleAddStudent}>
-                Add Student
+                Pridėti mokinį
               </Button>
             </HStack>
             {/* Display Added Students */}
@@ -303,15 +224,15 @@ const CreateTestAssignmentScreen = () => {
                 <HStack key={index} width="100%" justifyContent="space-between">
                   <Box>
                     <Text>- {code}</Text>
-                    <Text>Class: {studentClass}</Text>
-                    <Text>Gender: {gender}</Text>
+                    <Text>Klasė: {studentClass}</Text>
+                    <Text>Lytis: {gender}</Text>
                   </Box>
                   <Button
                     size="sm"
                     colorScheme="red"
                     onClick={() => handleRemoveStudent(code)}
                   >
-                    Remove
+                    Pašalinti
                   </Button>
                 </HStack>
               ))}
@@ -324,7 +245,7 @@ const CreateTestAssignmentScreen = () => {
                 marginTop={4}
                 onClick={handlePublishAssignment}
               >
-                Publish Assignment
+                Paskelbti priskyrimą
               </Button>
             )}
           </Box>

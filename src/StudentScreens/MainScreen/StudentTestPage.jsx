@@ -1,22 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  Spinner,
-  RadioGroup,
-  Radio,
-  CheckboxGroup,
-  Checkbox,
-  Textarea,
-  useToast,
-  Image,
+  Box, Heading, VStack, HStack, Text, Button,
+  RadioGroup, Radio, CheckboxGroup, Checkbox, Textarea, Image,
 } from "@chakra-ui/react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../apiClient";
+import LoadingSpinner from "../../Common/LoadingSpinner";
+import { useAppToast } from "../../utils/useAppToast";
 
 const StudentTestPage = () => {
   const { id } = useParams(); // Test session ID
@@ -25,7 +15,7 @@ const StudentTestPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes in seconds
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { testId } = location.state || {};
@@ -38,13 +28,7 @@ const StudentTestPage = () => {
         setTest(response.data);
       } catch (error) {
         console.error("Error fetching test session:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch test session.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti testo sesijos.", "error");
       } finally {
         setLoading(false);
       }
@@ -81,20 +65,12 @@ const StudentTestPage = () => {
   const handleAnswerSubmit = async (isFinal) => {
     const question = test.questions[currentQuestionIndex];
     const answersToSubmit = extractAnswers(question);
-
     try {
       await api.put("/TestSession/submit-answer", {
         studentTestSessionId: id,
         answers: answersToSubmit,
       });
-      toast({
-        title: "Atsakymas pateiktas",
-        description: "Atsakymas pateiktas sėkmingai",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-
+      toast("Atsakymas pateiktas", "Atsakymas pateiktas sėkmingai");
       if (isFinal) {
         handleCompleteTest();
       } else {
@@ -102,13 +78,7 @@ const StudentTestPage = () => {
       }
     } catch (error) {
       console.error("Error submitting answers:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit your answers.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko pateikti atsakymų.", "error");
     }
   };
 
@@ -138,37 +108,21 @@ const StudentTestPage = () => {
   const handleCompleteTest = async () => {
     const confirmFinish = window.confirm("Ar tikrai norite baigti testą?");
     if (!confirmFinish) return;
-
     try {
       await api.post(`/TestSession/${id}/complete`);
       navigate("/main");
     } catch (error) {
       console.error("Error completing test:", error);
-      toast({
-        title: "Error",
-        description: "Failed to complete the test.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko užbaigti testo.", "error");
     }
   };
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!test) {
-    return <Text>No test session found.</Text>;
+    return <Text>Testo sesija nerasta.</Text>;
   }
 
   const question = test.questions[currentQuestionIndex];
@@ -256,7 +210,7 @@ const StudentTestPage = () => {
                 {Array.from({ length: blankCount }).map((_, index) => (
                   <Textarea
                     key={index}
-                    placeholder={`Answer for blank ${index + 1}`}
+                    placeholder={`Atsakymas į ${index + 1} tuščią lauką`}
                     value={selectedAnswers[question.id]?.[index] || ""}
                     onChange={(e) =>
                       setSelectedAnswers((prev) => {

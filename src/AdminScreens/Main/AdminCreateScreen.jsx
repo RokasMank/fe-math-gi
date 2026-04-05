@@ -8,36 +8,31 @@ import {
   Input,
   VStack,
   Button,
-  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import api from "../../apiClient";
+import { useAppToast } from "../../utils/useAppToast";
 
 function AdminCreateScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const toast = useToast();
+  const toast = useAppToast();
 
   const handleCreateAdmin = async () => {
     try {
       await api.post("/admin/create", { username, password });
-      toast({
-        title: "Admin Created.",
-        description: "The admin has been successfully created.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Administratorius sukurtas.",
+        "Administratorius sėkmingai sukurtas."
+      );
       setUsername("");
       setPassword("");
     } catch (error) {
-      toast({
-        title: "Error Creating Admin.",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Klaida kuriant administratorių.",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error"
+      );
     }
   };
 
@@ -52,28 +47,28 @@ function AdminCreateScreen() {
         <CardBody>
           <VStack spacing={4} maxW="md">
             <Heading size="lg" mb={4}>
-              Create Admin
+              Sukurti administratorių
             </Heading>
             <FormControl id="username" isRequired>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Vartotojo vardas</FormLabel>
               <Input
                 type="text"
-                placeholder="Enter username"
+                placeholder="Įveskite vartotojo vardą"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </FormControl>
             <FormControl id="password" isRequired>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Slaptažodis</FormLabel>
               <Input
                 type="password"
-                placeholder="Enter password"
+                placeholder="Įveskite slaptažodį"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </FormControl>
             <Button colorScheme="blue" onClick={handleCreateAdmin}>
-              Create Admin
+              Sukurti administratorių
             </Button>
           </VStack>
         </CardBody>

@@ -9,40 +9,31 @@ import {
   Textarea,
   VStack,
   Button,
-  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import api from "../../apiClient";
 import { useNavigate } from "react-router-dom";
+import { useAppToast } from "../../utils/useAppToast";
 
 function CreateTestScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   const handleCreateTest = async () => {
     try {
       const response = await api.post("/Test", { title, description });
-      toast({
-        title: "Test Created.",
-        description: "The test has been successfully created.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Testas sukurtas.", "Testas sėkmingai sukurtas.");
       setTitle("");
       setDescription("");
-      const testId = response.data.id;
-      navigate(`add-questions/${testId}`);
+      navigate(`add-questions/${response.data.id}`);
     } catch (error) {
-      toast({
-        title: "Error Creating Test.",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Klaida kuriant testą.",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error"
+      );
     }
   };
 
@@ -57,31 +48,31 @@ function CreateTestScreen() {
         <CardBody>
           <VStack spacing={4} maxW="md">
             <Heading size="lg" mb={4}>
-              Create Test
+              Sukurti testą
             </Heading>
             <FormControl id="title" isRequired>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Pavadinimas</FormLabel>
               <Input
                 type="text"
-                placeholder="Enter test title"
+                placeholder="Įveskite testo pavadinimą"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </FormControl>
             <FormControl id="description">
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Aprašymas</FormLabel>
               <Textarea
-                placeholder="Enter test description"
+                placeholder="Įveskite testo aprašymą"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </FormControl>
             <FormControl id="description">
-              <FormLabel>Time</FormLabel>
+              <FormLabel>Laikas</FormLabel>
               <Input disabled placeholder="45 min" />
             </FormControl>
             <Button colorScheme="purple" onClick={handleCreateTest}>
-              Create Test
+              Sukurti testą
             </Button>
           </VStack>
         </CardBody>

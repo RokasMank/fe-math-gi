@@ -13,7 +13,7 @@ function LandingScreen() {
     >
       <VStack spacing={6}>
         <Heading size="lg" mb={6}>
-          Welcome to the System
+          Sveiki atvykę į sistemą
         </Heading>
 
         {/* Button to Navigate to Create Admin Screen */}
@@ -22,7 +22,7 @@ function LandingScreen() {
           size="lg"
           onClick={() => navigate("/admin/create")}
         >
-          Create Admin
+          Sukurti administratorių
         </Button>
 
         {/* Button to Navigate to Add Student Screen */}
@@ -31,7 +31,7 @@ function LandingScreen() {
           size="lg"
           onClick={() => navigate("/admin/manage-students")}
         >
-          Manage Students
+          Tvarkyti mokinius
         </Button>
 
         {/* Button to Navigate to Create Test Screen */}
@@ -40,28 +40,28 @@ function LandingScreen() {
           size="lg"
           onClick={() => navigate("/admin/create-test")}
         >
-          Create Test
+          Sukurti testą
         </Button>
         <Button
           colorScheme="green"
           size="lg"
           onClick={() => navigate("/admin/all-tests")}
         >
-          All Tests
+          Visi testai
         </Button>
         <Button
           colorScheme="yellow"
           size="lg"
           onClick={() => navigate("/admin/create-assignment")}
         >
-          Create test assignment
+          Sukurti testo priskyrimą
         </Button>
         <Button
           colorScheme="yellow"
           size="lg"
           onClick={() => navigate("/admin/view-assignments")}
         >
-          View test assignments
+          Peržiūrėti testo priskyrimus
         </Button>
       </VStack>
     </Container>

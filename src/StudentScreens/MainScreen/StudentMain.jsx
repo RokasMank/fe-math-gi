@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  VStack,
-  Button,
-  Spinner,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, Button, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import api from "../../apiClient";
+import LoadingSpinner from "../../Common/LoadingSpinner";
+import { useAppToast } from "../../utils/useAppToast";
 
 const StudentMain = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +21,7 @@ const StudentMain = () => {
         setSessions(response.data);
       } catch (error) {
         console.error("Error fetching test sessions:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch test sessions.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti testo sesijų.", "error");
       } finally {
         setLoading(false);
       }
@@ -46,47 +34,26 @@ const StudentMain = () => {
     try {
       // Call the StartSession endpoint
       await api.put(`/TestSession/start/${sessionId}`);
-      toast({
-        title: "Session Started",
-        description: "You can now begin your test.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sesija pradėta", "Dabar galite pradėti testą.");
       // Navigate to the test page
       navigate(`/test/${sessionId}`, { state: { testId } });
     } catch (error) {
       console.error("Error starting test session:", error);
-      toast({
-        title: "Error",
-        description: "Failed to start the test session.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko pradėti testo sesijos.", "error");
     }
   };
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   if (sessions.length === 0) {
     return (
       <Box padding={6}>
         <Heading size="lg" marginBottom={4}>
-          No Available Tests
+          Nėra prieinamų testų
         </Heading>
-        <Text>No test sessions are currently available for you.</Text>
+        <Text>Šiuo metu jums nėra prieinamų testo sesijų.</Text>
       </Box>
     );
   }

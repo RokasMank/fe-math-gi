@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, VStack, Button, Text, Spinner } from "@chakra-ui/react";
+import { Box, Heading, VStack, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import api from "../../apiClient";
+import LoadingSpinner from "../../Common/LoadingSpinner";
 
 const AllTestsScreen = () => {
   const [tests, setTests] = useState([]);
@@ -28,22 +29,13 @@ const AllTestsScreen = () => {
   };
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <Box padding={6}>
       <Heading size="lg" marginBottom={4}>
-        All Tests
+        Visi testai
       </Heading>
       <VStack spacing={4}>
         {tests.map((test) => (

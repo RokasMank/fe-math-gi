@@ -8,7 +8,7 @@ function QuestionView({ question, onRemove }) {
         <Box>
           {/* Question Text */}
           <Text fontWeight="bold">{question.text}</Text>
-          <Text>Points: {question.points}</Text>
+          <Text>Taškai: {question.points}</Text>
 
           {/* Display Image if available */}
           {question.imageUrl && (
@@ -20,14 +20,14 @@ function QuestionView({ question, onRemove }) {
           {/* Display Options */}
           {question.options?.length > 0 && (
             <Box marginTop={2}>
-              <Text fontWeight="bold">Options:</Text>
+              <Text fontWeight="bold">Variantai:</Text>
               <VStack align="start">
                 {question.options.map((option, idx) => (
                   <HStack key={idx} spacing={2}>
                     <Text>- {option}</Text>
                     {question.correctAnswers.includes(option) && (
                       <Text fontSize="sm" color="green.500" fontWeight="bold">
-                        (Correct)
+                        (Teisingas)
                       </Text>
                     )}
                   </HStack>
@@ -39,7 +39,7 @@ function QuestionView({ question, onRemove }) {
           {/* Display Correct Answers for Open-Ended Questions */}
           {!question.options?.length && question.correctAnswers.length > 0 && (
             <Box marginTop={2}>
-              <Text fontWeight="bold">Correct Answers:</Text>
+              <Text fontWeight="bold">Teisingi atsakymai:</Text>
               <VStack align="start">
                 {question.correctAnswers.map((answer, idx) => (
                   <Text key={idx}>- {answer}</Text>
@@ -49,13 +49,13 @@ function QuestionView({ question, onRemove }) {
           )}
           {question.questionType === 4 && (
             <Box marginTop={2}>
-              <Text fontWeight="bold">Text with Blanks:</Text>
+              <Text fontWeight="bold">Tekstas su tuščiais laukais:</Text>
               <Text>{question.textWithBlanks}</Text>
             </Box>
           )}
           {question.maxCharsAllowed ? (
             <Box marginTop={2}>
-              <Text fontWeight="bold">Maximum answer characters</Text>
+              <Text fontWeight="bold">Maksimalus atsakymo simbolių skaičius</Text>
 
               <Text>{question.maxCharsAllowed}</Text>
             </Box>
@@ -63,7 +63,7 @@ function QuestionView({ question, onRemove }) {
           {/* Display Subquestions */}
           {question.subQuestions?.length > 0 && (
             <Box marginTop={4}>
-              <Text fontWeight="bold">Subquestions:</Text>
+              <Text fontWeight="bold">Poklausimai:</Text>
               <VStack align="start" spacing={4}>
                 {question.subQuestions.map((subQuestion) => (
                   <QuestionView
@@ -80,7 +80,7 @@ function QuestionView({ question, onRemove }) {
         {/* Remove Button */}
         {onRemove && (
           <Button colorScheme="red" size="sm" onClick={onRemove}>
-            Remove
+            Pašalinti
           </Button>
         )}
       </HStack>

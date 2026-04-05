@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  VStack,
-  Text,
-  Button,
-  Spinner,
-  Divider,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, Text, Button, Divider } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
 import AddQuestionForm from "./Components/AddQuestionForm";
 import QuestionView from "../../Common/QuestionView";
+import LoadingSpinner from "../../Common/LoadingSpinner";
 import api from "../../apiClient";
+import { useAppToast } from "../../utils/useAppToast";
 
 function AddTestTestQuestionsScreen() {
   const navigate = useNavigate();
   const { testId } = useParams(); // Get testId from URL
-  const toast = useToast();
+  const toast = useAppToast();
   const [testDetails, setTestDetails] = useState(null); // State for test details
   const [loading, setLoading] = useState(true); // Loading state
 
@@ -28,13 +21,7 @@ function AddTestTestQuestionsScreen() {
       setTestDetails(response.data);
     } catch (error) {
       console.error("Error fetching test details:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch test details.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko gauti testo duomenų.", "error");
     } finally {
       setLoading(false);
     }
@@ -52,40 +39,19 @@ function AddTestTestQuestionsScreen() {
         ...testDetails,
         questions: testDetails.questions.filter((q) => q.id !== questionId),
       });
-      toast({
-        title: "Question Removed",
-        description: "The question was successfully removed.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klausimas pašalintas", "Klausimas sėkmingai pašalintas.");
     } catch (error) {
       console.error("Error removing question:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove the question.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko pašalinti klausimo.", "error");
     }
   };
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!testDetails) {
-    return <Text>No test details found.</Text>;
+    return <Text>Testo duomenų nerasta.</Text>;
   }
 
   return (
@@ -106,7 +72,7 @@ function AddTestTestQuestionsScreen() {
 
       {/* Display Existing Questions */}
       <Heading size="md" marginTop={6}>
-        Existing Questions
+        Esami klausimai
       </Heading>
       {testDetails.questions.length > 0 ? (
         <VStack align="start" spacing={4}>
@@ -119,9 +85,9 @@ function AddTestTestQuestionsScreen() {
           ))}
         </VStack>
       ) : (
-        <Text>No questions have been added to this test yet.</Text>
+        <Text>Šiam testui dar nepridėta klausimų.</Text>
       )}
-      <Button onClick={() => navigate("/admin/all-tests")}>View tests</Button>
+      <Button onClick={() => navigate("/admin/all-tests")}>Peržiūrėti testus</Button>
     </Box>
   );
 }

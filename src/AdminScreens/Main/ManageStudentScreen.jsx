@@ -8,7 +8,6 @@ import {
   Input,
   VStack,
   Button,
-  useToast,
   Select,
   Table,
   Thead,
@@ -24,6 +23,8 @@ import {
 import { SearchIcon } from "@chakra-ui/icons"; // Requires @chakra-ui/icons to be installed
 import { useState, useEffect, useRef } from "react";
 import api from "../../apiClient";
+import { useAppToast } from "../../utils/useAppToast";
+import { buildQueryString } from "../../utils/buildQueryString";
 
 function ManageStudentScreen() {
   // State for adding a single student
@@ -48,7 +49,7 @@ function ManageStudentScreen() {
   const [csvFile, setCsvFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const toast = useToast();
+  const toast = useAppToast();
 
   // Fetch students with filters and pagination
   const fetchStudents = async (reset = false) => {
@@ -62,15 +63,8 @@ function ManageStudentScreen() {
         class: filters.class || undefined,
         school: filters.school || undefined,
       };
-      console.log("Fetching students with params:", params); // Debug log
-
-      // Manually construct query string
-      const query = Object.entries(params)
-        .filter(([_, value]) => value !== undefined && value !== null)
-        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-        .join("&");
+      const query = buildQueryString(params);
       const url = query ? `/Student/list?${query}` : "/Student";
-      console.log("Constructed URL:", url); // Debug log
 
       const response = await api.get(url);
       const newStudents = response.data.students;
@@ -80,13 +74,11 @@ function ManageStudentScreen() {
       if (reset) setPage(1);
     } catch (error) {
       console.error("Fetch students error:", error, error.response?.data); // Debug log
-      toast({
-        title: "Error Fetching Students",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Klaida gaunant mokinius",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -107,13 +99,7 @@ function ManageStudentScreen() {
   // Handle adding a single student
   const handleAddStudent = async () => {
     if (!studentClass) {
-      toast({
-        title: "Invalid Class",
-        description: "Class must not be empty.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Neteisinga klasė", "Klasė negali būti tuščia.", "error");
       return;
     }
 
@@ -124,13 +110,7 @@ function ManageStudentScreen() {
         class: studentClass,
         school,
       });
-      toast({
-        title: "Student Added",
-        description: "The student has been successfully added.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Mokinys pridėtas", "Mokinys sėkmingai pridėtas.");
       setCode("");
       setGender("");
       setStudentClass("");
@@ -138,21 +118,17 @@ function ManageStudentScreen() {
       fetchStudents(true); // Refresh student list
     } catch (error) {
       if (error.response?.status === 409) {
-        toast({
-          title: "Error Adding Student",
-          description: "Student with this code already exists.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast(
+          "Klaida pridedant mokinį",
+          "Mokinys su šiuo kodu jau egzistuoja.",
+          "error"
+        );
       } else {
-        toast({
-          title: "Error Adding Student",
-          description: error.response?.data?.message || "Something went wrong.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast(
+          "Klaida pridedant mokinį",
+          error.response?.data?.message || "Kažkas nutiko.",
+          "error"
+        );
       }
     }
   };
@@ -160,13 +136,11 @@ function ManageStudentScreen() {
   // Handle CSV file upload
   const handleCsvUpload = async () => {
     if (!csvFile) {
-      toast({
-        title: "No File Selected",
-        description: "Please select a CSV file to upload.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Failas nepasirinktas",
+        "Pasirinkite CSV failą, kurį norite įkelti.",
+        "error"
+      );
       return;
     }
 
@@ -177,25 +151,16 @@ function ManageStudentScreen() {
       await api.post("/Student/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast({
-        title: "Students Uploaded",
-        description:
-          "Students have been successfully uploaded from the CSV file.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Mokiniai įkelti", "Mokiniai sėkmingai įkelti iš CSV failo.");
       setCsvFile(null);
       fileInputRef.current.value = null;
       fetchStudents(true); // Refresh student list
     } catch (error) {
-      toast({
-        title: "Error Uploading Students",
-        description: error.response?.data?.message || "Something went wrong.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast(
+        "Klaida įkeliant mokinius",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error"
+      );
     }
   };
 
@@ -216,49 +181,49 @@ function ManageStudentScreen() {
         <Card>
           <CardBody>
             <Heading size="lg" mb={4}>
-              Add Student
+              Pridėti mokinį
             </Heading>
             <VStack spacing={4}>
               <FormControl id="code" isRequired>
-                <FormLabel>Code</FormLabel>
+                <FormLabel>Kodas</FormLabel>
                 <Input
                   type="text"
-                  placeholder="Enter student code"
+                  placeholder="Įveskite mokinio kodą"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
               </FormControl>
               <FormControl id="gender" isRequired>
-                <FormLabel>Gender</FormLabel>
+                <FormLabel>Lytis</FormLabel>
                 <Select
-                  placeholder="Select gender"
+                  placeholder="Pasirinkite lytį"
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
+                  <option value="Male">Vyras</option>
+                  <option value="Female">Moteris</option>
                 </Select>
               </FormControl>
               <FormControl id="class" isRequired>
-                <FormLabel>Class</FormLabel>
+                <FormLabel>Klasė</FormLabel>
                 <Input
                   type="text"
-                  placeholder="Enter class (e.g., 10A, 11B)"
+                  placeholder="Įveskite klasę (pvz., 10A, 11B)"
                   value={studentClass}
                   onChange={(e) => setStudentClass(e.target.value)}
                 />
               </FormControl>
               <FormControl id="school" isRequired>
-                <FormLabel>School</FormLabel>
+                <FormLabel>Mokykla</FormLabel>
                 <Input
                   type="text"
-                  placeholder="Enter school name"
+                  placeholder="Įveskite mokyklos pavadinimą"
                   value={school}
                   onChange={(e) => setSchool(e.target.value)}
                 />
               </FormControl>
               <Button colorScheme="teal" onClick={handleAddStudent}>
-                Add Student
+                Pridėti mokinį
               </Button>
             </VStack>
           </CardBody>
@@ -268,11 +233,11 @@ function ManageStudentScreen() {
         <Card>
           <CardBody>
             <Heading size="lg" mb={4}>
-              Bulk Add Students
+              Masinis mokinių įkėlimas
             </Heading>
             <VStack spacing={4}>
               <FormControl>
-                <FormLabel>Upload CSV File</FormLabel>
+                <FormLabel>Įkelti CSV failą</FormLabel>
                 <Input
                   type="file"
                   accept=".csv"
@@ -281,7 +246,7 @@ function ManageStudentScreen() {
                 />
               </FormControl>
               <Button colorScheme="teal" onClick={handleCsvUpload}>
-                Upload CSV
+                Įkelti CSV
               </Button>
             </VStack>
           </CardBody>
@@ -291,19 +256,19 @@ function ManageStudentScreen() {
         <Card>
           <CardBody>
             <Heading size="lg" mb={4}>
-              Students
+              Mokiniai
             </Heading>
             <VStack spacing={4} align="stretch">
               {/* Filters */}
               <HStack spacing={4}>
                 <FormControl>
-                  <FormLabel>Filter by Code</FormLabel>
+                  <FormLabel>Filtruoti pagal kodą</FormLabel>
                   <InputGroup>
                     <InputLeftElement pointerEvents="none">
                       <SearchIcon color="gray.300" />
                     </InputLeftElement>
                     <Input
-                      placeholder="Search by code"
+                      placeholder="Ieškoti pagal kodą"
                       value={filters.code}
                       onChange={(e) =>
                         handleFilterChange("code", e.target.value)
@@ -312,23 +277,23 @@ function ManageStudentScreen() {
                   </InputGroup>
                 </FormControl>
                 <FormControl>
-                  <FormLabel>Filter by Gender</FormLabel>
+                  <FormLabel>Filtruoti pagal lytį</FormLabel>
                   <Select
-                    placeholder="Select gender"
+                    placeholder="Pasirinkite lytį"
                     value={filters.gender}
                     onChange={(e) =>
                       handleFilterChange("gender", e.target.value)
                     }
                   >
-                    <option value="">All</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
+                    <option value="">Visi</option>
+                    <option value="Male">Vyras</option>
+                    <option value="Female">Moteris</option>
                   </Select>
                 </FormControl>
                 <FormControl>
-                  <FormLabel>Filter by Class</FormLabel>
+                  <FormLabel>Filtruoti pagal klasę</FormLabel>
                   <Input
-                    placeholder="Enter class"
+                    placeholder="Įveskite klasę"
                     value={filters.class}
                     onChange={(e) =>
                       handleFilterChange("class", e.target.value)
@@ -336,9 +301,9 @@ function ManageStudentScreen() {
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel>Filter by School</FormLabel>
+                  <FormLabel>Filtruoti pagal mokyklą</FormLabel>
                   <Input
-                    placeholder="Enter school"
+                    placeholder="Įveskite mokyklą"
                     value={filters.school}
                     onChange={(e) =>
                       handleFilterChange("school", e.target.value)
@@ -351,10 +316,10 @@ function ManageStudentScreen() {
               <Table variant="simple">
                 <Thead>
                   <Tr>
-                    <Th>Code</Th>
-                    <Th>Gender</Th>
-                    <Th>Class</Th>
-                    <Th>School</Th>
+                    <Th>Kodas</Th>
+                    <Th>Lytis</Th>
+                    <Th>Klasė</Th>
+                    <Th>Mokykla</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -368,7 +333,7 @@ function ManageStudentScreen() {
                   ))}
                 </Tbody>
               </Table>
-              {loading && <Box textAlign="center">Loading...</Box>}
+              {loading && <Box textAlign="center">Kraunama...</Box>}
               {hasMore && !loading && (
                 <Button
                   colorScheme="teal"
@@ -376,7 +341,7 @@ function ManageStudentScreen() {
                   mt={4}
                   alignSelf="center"
                 >
-                  Load More
+                  Įkelti daugiau
                 </Button>
               )}
             </VStack>

@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  Divider,
-  useToast,
-  Spinner,
-} from "@chakra-ui/react";
+import { Box, Heading, Text, VStack, Divider } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import api from "../../apiClient";
+import LoadingSpinner from "../../Common/LoadingSpinner";
+import { useAppToast } from "../../utils/useAppToast";
 
 const TestResultsPage = ({ isTeacherView }) => {
   const { id } = useParams();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const toast = useAppToast();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -24,13 +18,7 @@ const TestResultsPage = ({ isTeacherView }) => {
         setResults(response.data);
       } catch (error) {
         console.error("Error fetching results:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch results.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti rezultatų.", "error");
       } finally {
         setLoading(false);
       }
@@ -70,17 +58,17 @@ const TestResultsPage = ({ isTeacherView }) => {
         </VStack>
       )}
       <Text marginTop={2}>
-        Provided Answers:{" "}
+        Pateikti atsakymai:{" "}
         {result.providedAnswers.length
           ? result.providedAnswers.join(", ")
-          : "No answer provided"}
+          : "Atsakymas nepateiktas"}
       </Text>
-      <Text>Correct Answers: {result.question.correctAnswers.join(", ")}</Text>
+      <Text>Teisingi atsakymai: {result.question.correctAnswers.join(", ")}</Text>
       <Text
         fontWeight="bold"
         color={result.isCorrect ? "green.500" : "red.500"}
       >
-        {result.isCorrect ? "Correct" : "Incorrect"}
+        {result.isCorrect ? "Teisingai" : "Neteisingai"}
       </Text>
       {result.subResults?.length > 0 && (
         <VStack align="start" marginTop={4}>
@@ -93,20 +81,11 @@ const TestResultsPage = ({ isTeacherView }) => {
   );
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!results) {
-    return <Text>No results found.</Text>;
+    return <Text>Rezultatų nerasta.</Text>;
   }
 
   return (

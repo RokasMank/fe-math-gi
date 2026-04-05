@@ -8,26 +8,20 @@ import {
   Input,
   VStack,
   Button,
-  useToast,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../../apiClient";
+import { useAppToast } from "../../utils/useAppToast";
 
 function LoginScreen() {
   const [code, setCode] = useState(""); // State to capture the student code
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useAppToast();
 
   const handleLogin = async () => {
     if (!code.trim()) {
-      toast({
-        title: "Error",
-        description: "Code cannot be empty.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Kodas negali būti tuščias.", "error");
       return;
     }
 
@@ -43,22 +37,10 @@ function LoginScreen() {
       // Navigate to the main screen with student data if needed
       navigate("/main", { state: { student } });
 
-      toast({
-        title: "Success",
-        description: `Welcome, ${student.code}`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Sėkmė", `Sveiki, ${student.code}`);
     } catch (error) {
       console.error("Error during login:", error);
-      toast({
-        title: "Error",
-        description: "Failed to login. Please check your code.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Prisijungimas nepavyko. Patikrinkite savo kodą.", "error");
     }
   };
 

@@ -44,7 +44,7 @@ function AdminLoginScreen() {
         err.response?.data?.message || err.message
       );
       setError(
-        err.response?.data?.message || "Login failed. Please try again."
+        err.response?.data?.message || "Prisijungimas nepavyko. Bandykite dar kartą."
       );
     }
   };

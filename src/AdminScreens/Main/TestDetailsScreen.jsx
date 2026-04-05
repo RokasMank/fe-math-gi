@@ -1,24 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  Spinner,
-  VStack,
-  Divider,
-  Button,
-  HStack,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Heading, Text, VStack, Divider, Button, HStack } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
 import QuestionView from "../../Common/QuestionView";
+import LoadingSpinner from "../../Common/LoadingSpinner";
+import { useAppToast } from "../../utils/useAppToast";
 
 const TestDetailsScreen = () => {
   const { id } = useParams(); // Get test ID from route params
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   // Fetch test details
@@ -29,13 +21,7 @@ const TestDetailsScreen = () => {
         setTest(response.data);
       } catch (error) {
         console.error("Error fetching test details:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch test details.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        toast("Klaida", "Nepavyko gauti testo duomenų.", "error");
       } finally {
         setLoading(false);
       }
@@ -52,22 +38,10 @@ const TestDetailsScreen = () => {
         ...test,
         questions: test.questions.filter((q) => q.id !== questionId),
       });
-      toast({
-        title: "Question Removed",
-        description: "The question was successfully removed.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klausimas pašalintas", "Klausimas sėkmingai pašalintas.");
     } catch (error) {
       console.error("Error removing question:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove the question.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko pašalinti klausimo.", "error");
     }
   };
 
@@ -76,22 +50,10 @@ const TestDetailsScreen = () => {
     try {
       await api.post(`/Test/${id}/publish`);
       setTest({ ...test, published: true }); // Update the state to reflect the test is now published
-      toast({
-        title: "Test Published",
-        description: "The test was successfully published.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Testas paskelbtas", "Testas sėkmingai paskelbtas.");
     } catch (error) {
       console.error("Error publishing test:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish the test.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      toast("Klaida", "Nepavyko paskelbti testo.", "error");
     }
   };
 
@@ -100,20 +62,11 @@ const TestDetailsScreen = () => {
   };
 
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Spinner size="xl" />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!test) {
-    return <Text>No test found.</Text>;
+    return <Text>Testas nerastas.</Text>;
   }
 
   return (
@@ -125,7 +78,7 @@ const TestDetailsScreen = () => {
         {test.description}
       </Text>
       <Text fontSize="sm" marginBottom={6}>
-        {test.published ? "Status: Published" : "Status: Draft (Not Published)"}
+        {test.published ? "Būsena: Paskelbtas" : "Būsena: Juodraštis (nepaskelbtas)"}
       </Text>
 
       {!test.published && (
@@ -135,7 +88,7 @@ const TestDetailsScreen = () => {
             marginBottom={6}
             onClick={handlePublishTest}
           >
-            Publish Test
+            Paskelbti testą
           </Button>
 
           <Button
@@ -143,77 +96,22 @@ const TestDetailsScreen = () => {
             marginBottom={6}
             onClick={handleGoToTest}
           >
-            Go to test
+            Eiti į testą
           </Button>
         </>
       )}
 
       <Divider marginBottom={4} />
       <Heading size="md" marginBottom={4}>
-        Questions
+        Klausimai
       </Heading>
       <VStack align="start" spacing={4}>
         {test.questions.length > 0 ? (
           test.questions.map((question, index) => (
-            // <Box
-            //   key={question.id}
-            //   borderWidth={1}
-            //   borderRadius="md"
-            //   padding={4}
-            //   width="100%"
-            // >
-            //   <HStack justify="space-between">
-            //     <Box>
-            //       <Text fontWeight="bold">
-            //         {index + 1}. {question.text}
-            //       </Text>
-            //       <Text>Points: {question.points}</Text>
-            //       {question.options?.length > 0 ? (
-            //         <Box marginTop={2}>
-            //           <Text fontWeight="bold">Options:</Text>
-            //           <VStack align="start">
-            //             {question.options.map((option, idx) => (
-            //               <HStack key={idx} spacing={2}>
-            //                 <Text>- {option}</Text>
-            //                 {question.correctAnswers.includes(option) && (
-            //                   <Text
-            //                     fontSize="sm"
-            //                     color="green.500"
-            //                     fontWeight="bold"
-            //                   >
-            //                     (Correct)
-            //                   </Text>
-            //                 )}
-            //               </HStack>
-            //             ))}
-            //           </VStack>
-            //         </Box>
-            //       ) : (
-            //         <Box marginTop={2}>
-            //           <Text fontWeight="bold">Correct Answers:</Text>
-            //           <VStack align="start">
-            //             {question.correctAnswers.map((answer, idx) => (
-            //               <Text key={idx}>- {answer}</Text>
-            //             ))}
-            //           </VStack>
-            //         </Box>
-            //       )}
-            //     </Box>
-            //     {!test.published && (
-            //       <Button
-            //         colorScheme="red"
-            //         size="sm"
-            //         onClick={() => handleRemoveQuestion(question.id)}
-            //       >
-            //         Remove
-            //       </Button>
-            //     )}
-            //   </HStack>
-            // </Box>
-            <QuestionView question={question} />
+            <QuestionView key={question.id} question={question} />
           ))
         ) : (
-          <Text>No questions available for this test.</Text>
+          <Text>Šiam testui klausimų nėra.</Text>
         )}
       </VStack>
     </Box>
