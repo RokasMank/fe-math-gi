@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Text, VStack, Divider, Button, HStack } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Text,
+  VStack,
+  Divider,
+  Button,
+  HStack,
+} from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
 import QuestionView from "../../Common/QuestionView";
@@ -28,7 +36,7 @@ const TestDetailsScreen = () => {
     };
 
     fetchTestDetails();
-  }, [id, toast]);
+  }, []);
 
   // Remove a question
   const handleRemoveQuestion = async (questionId) => {
@@ -78,7 +86,9 @@ const TestDetailsScreen = () => {
         {test.description}
       </Text>
       <Text fontSize="sm" marginBottom={6}>
-        {test.published ? "Būsena: Paskelbtas" : "Būsena: Juodraštis (nepaskelbtas)"}
+        {test.published
+          ? "Būsena: Paskelbtas"
+          : "Būsena: Juodraštis (nepaskelbtas)"}
       </Text>
 
       {!test.published && (

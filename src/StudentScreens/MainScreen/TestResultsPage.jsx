@@ -25,7 +25,7 @@ const TestResultsPage = ({ isTeacherView }) => {
     };
 
     fetchResults();
-  }, [id, toast]);
+  }, []);
 
   const renderQuestion = (result, index) => (
     <Box
@@ -48,8 +48,8 @@ const TestResultsPage = ({ isTeacherView }) => {
                 result.question.correctAnswers.includes(option)
                   ? "green.500"
                   : result.providedAnswers.includes(option)
-                  ? "red.500"
-                  : "gray.800"
+                    ? "red.500"
+                    : "gray.800"
               }
             >
               - {option}
@@ -63,7 +63,9 @@ const TestResultsPage = ({ isTeacherView }) => {
           ? result.providedAnswers.join(", ")
           : "Atsakymas nepateiktas"}
       </Text>
-      <Text>Teisingi atsakymai: {result.question.correctAnswers.join(", ")}</Text>
+      <Text>
+        Teisingi atsakymai: {result.question.correctAnswers.join(", ")}
+      </Text>
       <Text
         fontWeight="bold"
         color={result.isCorrect ? "green.500" : "red.500"}
@@ -73,7 +75,7 @@ const TestResultsPage = ({ isTeacherView }) => {
       {result.subResults?.length > 0 && (
         <VStack align="start" marginTop={4}>
           {result.subResults.map((subResult, subIndex) =>
-            renderQuestion(subResult, subIndex)
+            renderQuestion(subResult, subIndex),
           )}
         </VStack>
       )}

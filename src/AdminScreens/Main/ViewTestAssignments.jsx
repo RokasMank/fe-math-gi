@@ -12,7 +12,6 @@ const ViewTestAssignmentsScreen = () => {
   const toast = useAppToast();
   const navigate = useNavigate();
 
-
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -27,7 +26,7 @@ const ViewTestAssignmentsScreen = () => {
     };
 
     fetchAssignments();
-  }, [toast]);
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;

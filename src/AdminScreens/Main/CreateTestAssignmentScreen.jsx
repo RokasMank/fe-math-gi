@@ -38,7 +38,7 @@ const CreateTestAssignmentScreen = () => {
     };
 
     fetchPublishedTests();
-  }, [toast]);
+  }, []);
 
   const handleCreateOrUpdateAssignment = async () => {
     if (!title.trim() || !selectedTest || !selectedClass) {
@@ -70,7 +70,10 @@ const CreateTestAssignmentScreen = () => {
         const { assignmentId } = response.data;
         setAssignmentId(assignmentId); // Store assignment ID
 
-        toast("Sėkmė", "Priskyrimas sėkmingai sukurtas. Dabar galite pridėti mokinius.");
+        toast(
+          "Sėkmė",
+          "Priskyrimas sėkmingai sukurtas. Dabar galite pridėti mokinius.",
+        );
       }
     } catch (error) {
       console.error("Error creating/updating assignment:", error);
@@ -90,7 +93,7 @@ const CreateTestAssignmentScreen = () => {
         `/TestAssignment/${assignmentId}/add-student`,
         {
           studentCode,
-        }
+        },
       );
 
       const { code, studentClass, gender } = response.data; // Extract student details
@@ -108,7 +111,11 @@ const CreateTestAssignmentScreen = () => {
       toast("Sėkmė", "Mokinys pridėtas prie priskyrimo.");
     } catch (error) {
       console.error("Error adding student:", error);
-      toast("Klaida", "Nepavyko pridėti mokinio. Patikrinkite, ar kodas teisingas.", "error");
+      toast(
+        "Klaida",
+        "Nepavyko pridėti mokinio. Patikrinkite, ar kodas teisingas.",
+        "error",
+      );
     }
   };
 
@@ -127,7 +134,7 @@ const CreateTestAssignmentScreen = () => {
     try {
       // Call the backend to remove the student
       await api.delete(
-        `/TestAssignment/${assignmentId}/remove-student/${studentCode}`
+        `/TestAssignment/${assignmentId}/remove-student/${studentCode}`,
       );
 
       // Remove the student from the local list

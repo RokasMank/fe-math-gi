@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Box, Heading, VStack, Text, HStack, Divider, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  VStack,
+  Text,
+  HStack,
+  Divider,
+  Button,
+} from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../apiClient";
 import LoadingSpinner from "../../Common/LoadingSpinner";
@@ -27,11 +35,11 @@ const ViewAssignmentDetailsScreen = () => {
     };
 
     fetchAssignmentDetails();
-  }, [id, toast]);
+  }, []);
 
   const handleDeleteAssignment = async () => {
     const confirmDelete = window.confirm(
-      "Ar tikrai norite ištrinti šį priskyrimą? Šio veiksmo negalima atšaukti."
+      "Ar tikrai norite ištrinti šį priskyrimą? Šio veiksmo negalima atšaukti.",
     );
 
     if (!confirmDelete) return;
@@ -42,7 +50,11 @@ const ViewAssignmentDetailsScreen = () => {
       navigate("/admin/view-assignments");
     } catch (error) {
       console.error("Error deleting assignment:", error);
-      toast("Klaida", "Nepavyko ištrinti priskyrimo. Įsitikinkite, kad jis nėra paskelbtas.", "error");
+      toast(
+        "Klaida",
+        "Nepavyko ištrinti priskyrimo. Įsitikinkite, kad jis nėra paskelbtas.",
+        "error",
+      );
     }
   };
 
@@ -70,7 +82,7 @@ const ViewAssignmentDetailsScreen = () => {
 
   const handleFinishAssignment = async () => {
     const confirmFinish = window.confirm(
-      "Ar tikrai norite baigti šį priskyrimą? Šio veiksmo negalima atšaukti."
+      "Ar tikrai norite baigti šį priskyrimą? Šio veiksmo negalima atšaukti.",
     );
 
     if (!confirmFinish) return;
@@ -111,7 +123,6 @@ const ViewAssignmentDetailsScreen = () => {
   if (!assignment) {
     return <Text>Priskyrimas nerastas.</Text>;
   }
-
 
   return (
     <Box padding={6}>
@@ -164,15 +175,15 @@ const ViewAssignmentDetailsScreen = () => {
                     student.sessionStatus === 0
                       ? "gray.400"
                       : student.sessionStatus === 1
-                      ? "yellow.400"
-                      : "green.400"
+                        ? "yellow.400"
+                        : "green.400"
                   }
                 >
                   {student.sessionStatus === 0
                     ? "Juodraštis"
                     : student.sessionStatus === 1
-                    ? "Vyksta"
-                    : "Baigtas"}
+                      ? "Vyksta"
+                      : "Baigtas"}
                 </Text>
               </Text>
             </Box>

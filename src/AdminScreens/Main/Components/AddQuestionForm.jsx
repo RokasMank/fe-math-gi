@@ -29,6 +29,84 @@ const CONTENT_TYPE_OPTIONS = ["CotOne", "CotTwo", "CotThree"];
 const COGNITIVE_AREA_OPTIONS = ["CogOne", "CogTwo", "CogThree"];
 const ACHIEVEMENT_AREA_OPTIONS = ["AOne", "ATwo", "AThree"];
 
+const QUESTION_TYPE_OPTIONS = [
+  { value: "", label: "Visi" },
+  { value: "1", label: "Atviras atsakymas" },
+  { value: "2", label: "Keli teisingi atsakymai" },
+  { value: "3", label: "Vienas teisingas atsakymas" },
+  { value: "4", label: "Užpildyti tuščius laukus" },
+];
+
+const CATEGORY_LABELS = {
+  0: "CatOne",
+  1: "CatTwo",
+  2: "CatThree",
+  CatOne: "CatOne",
+  CatTwo: "CatTwo",
+  CatThree: "CatThree",
+};
+
+const CONTENT_TYPE_LABELS = {
+  0: "CotOne",
+  1: "CotTwo",
+  2: "CotThree",
+  CotOne: "CotOne",
+  CotTwo: "CotTwo",
+  CotThree: "CotThree",
+};
+
+const COGNITIVE_AREA_LABELS = {
+  0: "CogOne",
+  1: "CogTwo",
+  2: "CogThree",
+  CogOne: "CogOne",
+  CogTwo: "CogTwo",
+  CogThree: "CogThree",
+};
+
+const ACHIEVEMENT_AREA_LABELS = {
+  0: "AOne",
+  1: "ATwo",
+  2: "AThree",
+  AOne: "AOne",
+  ATwo: "ATwo",
+  AThree: "AThree",
+};
+
+const QUESTION_TYPE_LABELS = {
+  1: "Atviras atsakymas",
+  2: "Keli teisingi atsakymai",
+  3: "Vienas teisingas atsakymas",
+  4: "Užpildyti tuščius laukus",
+  OpenEnded: "Atviras atsakymas",
+  MultipleChoice: "Keli teisingi atsakymai",
+  SingleChoice: "Vienas teisingas atsakymas",
+  FillInBlanks: "Užpildyti tuščius laukus",
+};
+
+function formatEnumLabel(value, labels) {
+  if (value === undefined || value === null || value === "") {
+    return "";
+  }
+  return (
+    labels[value] ||
+    labels[String(value)] ||
+    labels[Number(value)] ||
+    String(value)
+  );
+}
+
+function getQuestionTypeLabel(type) {
+  if (type === undefined || type === null || type === "") {
+    return "";
+  }
+  return (
+    QUESTION_TYPE_LABELS[type] ||
+    QUESTION_TYPE_LABELS[Number(type)] ||
+    String(type)
+  );
+}
+
 function QuestionForm({ question, setQuestion, removeSubQuestion }) {
   const handleAddOption = () => {
     setQuestion({
@@ -40,7 +118,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
   const handleRemoveOption = (index) => {
     const updatedOptions = question.options.filter((_, i) => i !== index);
     const updatedCorrectAnswers = question.correctAnswers.filter((answer) =>
-      updatedOptions.includes(answer)
+      updatedOptions.includes(answer),
     );
     setQuestion({
       ...question,
@@ -167,7 +245,6 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
         <FormControl isRequired id="points">
           <FormLabel>Taškai</FormLabel>
           <Input
-            type="number"
             placeholder="Įveskite taškų skaičių"
             value={question.points}
             onChange={(e) =>
@@ -203,7 +280,10 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           <Select
             value={question.questionCategoryClass || "CatOne"}
             onChange={(e) =>
-              setQuestion({ ...question, questionCategoryClass: e.target.value })
+              setQuestion({
+                ...question,
+                questionCategoryClass: e.target.value,
+              })
             }
           >
             {QUESTION_CATEGORY_OPTIONS.map((option) => (
@@ -306,7 +386,8 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           {question.setMaxChars && (
             <FormControl id="maxCharsAllowed" isRequired marginTop={2}>
               <FormLabel>
-                Maksimalus simbolių skaičius (atsižvelkite į skyrybos ženklus!! (,.))
+                Maksimalus simbolių skaičius (atsižvelkite į skyrybos ženklus!!
+                (,.))
               </FormLabel>
               <Input
                 type="number"
@@ -348,7 +429,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                         ...question,
                         correctAnswers: question.correctAnswers.includes(option)
                           ? question.correctAnswers.filter(
-                              (ans) => ans !== option
+                              (ans) => ans !== option,
                             )
                           : [...question.correctAnswers, option],
                       });
@@ -404,7 +485,7 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                     colorScheme="red"
                     onClick={() => {
                       const updatedAnswers = question.correctAnswers.filter(
-                        (_, i) => i !== index
+                        (_, i) => i !== index,
                       );
                       setQuestion({
                         ...question,
@@ -477,7 +558,11 @@ function AddQuestionForm({ testId, toast, callback }) {
       const response = await api.get(url);
       setBankQuestions(response.data || []);
     } catch (error) {
-      toast("Klaida įkeliant klausimų banką", error.response?.data?.message || "Kažkas nutiko.", "error");
+      toast(
+        "Klaida įkeliant klausimų banką",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error",
+      );
     } finally {
       setLoadingBank(false);
     }
@@ -492,14 +577,22 @@ function AddQuestionForm({ testId, toast, callback }) {
       const countBlank = (text) => (text.match(/\[\[\]\]/g) || []).length;
       const blankCount = countBlank(question.textWithBlanks);
       if (blankCount === 0) {
-        toast("Klaida pridedant klausimą", "Tekstas su tuščiais laukais turi turėti bent vieną [[]].", "error");
+        toast(
+          "Klaida pridedant klausimą",
+          "Tekstas su tuščiais laukais turi turėti bent vieną [[]].",
+          "error",
+        );
         return;
       }
       if (
         question.correctAnswers.length !== blankCount ||
         question.correctAnswers.some((answer) => !answer.trim())
       ) {
-        toast("Klaida pridedant klausimą", "Prašome pateikti teisingą atsakymą kiekvienam tuščiam laukui ([[]]).", "error");
+        toast(
+          "Klaida pridedant klausimą",
+          "Prašome pateikti teisingą atsakymą kiekvienam tuščiam laukui ([[]]).",
+          "error",
+        );
         return;
       }
     }
@@ -511,24 +604,45 @@ function AddQuestionForm({ testId, toast, callback }) {
       callback();
       fetchBankQuestions();
     } catch (error) {
-      toast("Klaida pridedant klausimą", error.response?.data?.message || "Kažkas nutiko.", "error");
+      toast(
+        "Klaida pridedant klausimą",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error",
+      );
     }
   };
 
   const handleAddFromBank = async (questionId) => {
-    const defaultPoints = parseInt(bankPointsByQuestionId[questionId] || "1", 10);
+    const defaultPoints = parseInt(
+      bankPointsByQuestionId[questionId] || "1",
+      10,
+    );
 
     if (!defaultPoints || defaultPoints < 1) {
-      toast("Neteisingi taškai", "Taškų skaičius turi būti didesnis nei 0.", "error");
+      toast(
+        "Neteisingi taškai",
+        "Taškų skaičius turi būti didesnis nei 0.",
+        "error",
+      );
       return;
     }
 
     try {
-      await api.post(`/Question/${testId}/questions/from-bank`, { questionId, defaultPoints });
-      toast("Klausimas susietas", "Klausimas iš banko pridėtas prie šio testo.");
+      await api.post(`/Question/${testId}/questions/from-bank`, {
+        questionId,
+        defaultPoints,
+      });
+      toast(
+        "Klausimas susietas",
+        "Klausimas iš banko pridėtas prie šio testo.",
+      );
       callback();
     } catch (error) {
-      toast("Klaida susiejant klausimą", error.response?.data?.message || "Kažkas nutiko.", "error");
+      toast(
+        "Klaida susiejant klausimą",
+        error.response?.data?.message || "Kažkas nutiko.",
+        "error",
+      );
     }
   };
 
@@ -549,7 +663,11 @@ function AddQuestionForm({ testId, toast, callback }) {
           </TabPanel>
 
           <TabPanel paddingX={0}>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3} marginBottom={4}>
+            <SimpleGrid
+              columns={{ base: 1, md: 3 }}
+              spacing={3}
+              marginBottom={4}
+            >
               <FormControl>
                 <FormLabel>Klausimo tipas</FormLabel>
                 <Select
@@ -561,11 +679,11 @@ function AddQuestionForm({ testId, toast, callback }) {
                     }))
                   }
                 >
-                  <option value="">Visi</option>
-                  <option value="OpenEnded">OpenEnded</option>
-                  <option value="MultipleChoice">MultipleChoice</option>
-                  <option value="SingleChoice">SingleChoice</option>
-                  <option value="FillInBlanks">FillInBlanks</option>
+                  {QUESTION_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </Select>
               </FormControl>
               <FormControl>
@@ -653,17 +771,77 @@ function AddQuestionForm({ testId, toast, callback }) {
             ) : (
               <VStack align="stretch" spacing={3}>
                 {bankQuestions.map((bankQuestion) => (
-                  <Box key={bankQuestion.id} borderWidth={1} borderRadius="md" padding={4}>
+                  <Box
+                    key={bankQuestion.id}
+                    borderWidth={1}
+                    borderRadius="md"
+                    padding={4}
+                  >
                     <Text fontWeight="bold">{bankQuestion.text}</Text>
-                    <Text fontSize="sm">Tipas: {bankQuestion.questionType}</Text>
                     <Text fontSize="sm">
-                      {bankQuestion.questionCategoryClass} | {bankQuestion.contentType} | {bankQuestion.cognitiveArea} | {bankQuestion.achievementArea}
+                      Tipas: {getQuestionTypeLabel(bankQuestion.questionType)}
                     </Text>
+                    <Text fontSize="sm">
+                      Kategorija:{" "}
+                      {formatEnumLabel(
+                        bankQuestion.questionCategoryClass,
+                        CATEGORY_LABELS,
+                      )}{" "}
+                      | Turinio tipas:{" "}
+                      {formatEnumLabel(
+                        bankQuestion.contentType,
+                        CONTENT_TYPE_LABELS,
+                      )}
+                    </Text>
+                    <Text fontSize="sm">
+                      Kognityvinė sritis:{" "}
+                      {formatEnumLabel(
+                        bankQuestion.cognitiveArea,
+                        COGNITIVE_AREA_LABELS,
+                      )}{" "}
+                      | Pasiekimų sritis:{" "}
+                      {formatEnumLabel(
+                        bankQuestion.achievementArea,
+                        ACHIEVEMENT_AREA_LABELS,
+                      )}
+                    </Text>
+                    {bankQuestion.options?.length > 0 && (
+                      <Box marginTop={2}>
+                        <Text fontWeight="bold">Variantai:</Text>
+                        <VStack align="start" spacing={1}>
+                          {bankQuestion.options.map((option, index) => (
+                            <Text key={index}>- {option}</Text>
+                          ))}
+                        </VStack>
+                      </Box>
+                    )}
+                    {Number(bankQuestion.questionType) === 4 &&
+                      bankQuestion.textWithBlanks && (
+                        <Box marginTop={2}>
+                          <Text fontWeight="bold">
+                            Tekstas su tuščiais laukais:
+                          </Text>
+                          <Text>{bankQuestion.textWithBlanks}</Text>
+                        </Box>
+                      )}
+                    {bankQuestion.correctAnswers?.length > 0 && (
+                      <Box marginTop={2}>
+                        <Text fontWeight="bold">Teisingi atsakymai:</Text>
+                        <VStack align="start" spacing={1}>
+                          {bankQuestion.correctAnswers.map((answer, index) => (
+                            <Text key={index}>- {answer}</Text>
+                          ))}
+                        </VStack>
+                      </Box>
+                    )}
+                    {bankQuestion.maxCharsAllowed ? (
+                      <Text fontSize="sm" marginTop={2}>
+                        Maks. simbolių: {bankQuestion.maxCharsAllowed}
+                      </Text>
+                    ) : null}
                     <HStack marginTop={3}>
                       <Input
                         type="number"
-                        min={1}
-                        max={100}
                         width="140px"
                         value={bankPointsByQuestionId[bankQuestion.id] || "1"}
                         onChange={(e) =>

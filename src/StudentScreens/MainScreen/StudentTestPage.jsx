@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Heading, VStack, HStack, Text, Button,
-  RadioGroup, Radio, CheckboxGroup, Checkbox, Textarea, Image,
+  Box,
+  Heading,
+  VStack,
+  HStack,
+  Text,
+  Button,
+  RadioGroup,
+  Radio,
+  CheckboxGroup,
+  Checkbox,
+  Textarea,
+  Image,
 } from "@chakra-ui/react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../apiClient";
@@ -35,7 +45,7 @@ const StudentTestPage = () => {
     };
 
     fetchTestSession();
-  }, [testId, toast]);
+  }, []);
 
   // Timer logic
   useEffect(() => {
@@ -133,7 +143,7 @@ const StudentTestPage = () => {
 
   const renderQuestion = (question) => {
     const blankCount =
-      question.questionType === 3 ? countBlanks(question.textWithBlanks) : 0;
+      question.questionType === 4 ? countBlanks(question.textWithBlanks) : 0;
 
     return (
       <Box borderWidth={1} borderRadius="md" padding={4} marginBottom={6}>
@@ -271,7 +281,7 @@ const StudentTestPage = () => {
           colorScheme="blue"
           onClick={() =>
             handleAnswerSubmit(
-              currentQuestionIndex + 1 === test.questions.length
+              currentQuestionIndex + 1 === test.questions.length,
             )
           }
           isDisabled={

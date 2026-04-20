@@ -16,7 +16,7 @@ const StudentMain = () => {
       try {
         // Make an API call to get student test sessions
         const response = await api.post(
-          `/Student/getSessions/${localStorage.getItem("studentId")}`
+          `/Student/getSessions/${localStorage.getItem("studentId")}`,
         );
         setSessions(response.data);
       } catch (error) {
@@ -28,7 +28,7 @@ const StudentMain = () => {
     };
 
     fetchTestSessions();
-  }, [toast, navigate]);
+  }, []);
 
   const handleStartSession = async (sessionId, testId) => {
     try {
