@@ -17,7 +17,6 @@ export const DEFAULT_QUESTION = Object.freeze({
   setMaxChars: false,
   maxCharsAllowed: null,
   textWithBlanks: "",
-  questionCategoryClass: "CatOne",
   contentType: "NumbersAndCalculations",
   achievementArea: "KnowledgeUnderstandingArgumentation",
 });

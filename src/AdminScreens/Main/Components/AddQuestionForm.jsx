@@ -24,9 +24,17 @@ import api from "../../../apiClient";
 import { DEFAULT_QUESTION } from "../../../utils/defaultQuestion";
 import { buildQueryString } from "../../../utils/buildQueryString";
 
-const QUESTION_CATEGORY_OPTIONS = ["CatOne", "CatTwo", "CatThree"];
-const CONTENT_TYPE_OPTIONS = ["NumbersAndCalculations", "ModelsAndRelationships", "GeometryAndMeasurements", "DataAndProbability"];
-const ACHIEVEMENT_AREA_OPTIONS = ["KnowledgeUnderstandingArgumentation", "MathematicalCommunication", "ProblemSolving"];
+const CONTENT_TYPE_OPTIONS = [
+  "NumbersAndCalculations",
+  "ModelsAndRelationships",
+  "GeometryAndMeasurements",
+  "DataAndProbability",
+];
+const ACHIEVEMENT_AREA_OPTIONS = [
+  "KnowledgeUnderstandingArgumentation",
+  "MathematicalCommunication",
+  "ProblemSolving",
+];
 
 const QUESTION_TYPE_OPTIONS = [
   { value: "", label: "Visi" },
@@ -35,15 +43,6 @@ const QUESTION_TYPE_OPTIONS = [
   { value: "3", label: "Vienas teisingas atsakymas" },
   { value: "4", label: "Užpildyti tuščius laukus" },
 ];
-
-const CATEGORY_LABELS = {
-  0: "CatOne",
-  1: "CatTwo",
-  2: "CatThree",
-  CatOne: "CatOne",
-  CatTwo: "CatTwo",
-  CatThree: "CatThree",
-};
 
 const CONTENT_TYPE_LABELS = {
   1: "Skaičiai ir skaičiavimai",
@@ -266,24 +265,6 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
         </FormControl>
       </HStack>
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} marginTop={3}>
-        <FormControl id="questionCategoryClass" isRequired>
-          <FormLabel>Klausimo kategorija</FormLabel>
-          <Select
-            value={question.questionCategoryClass || "CatOne"}
-            onChange={(e) =>
-              setQuestion({
-                ...question,
-                questionCategoryClass: e.target.value,
-              })
-            }
-          >
-            {QUESTION_CATEGORY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
         <FormControl id="contentType" isRequired>
           <FormLabel>Turinio tipas</FormLabel>
           <Select
@@ -405,10 +386,11 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                         ...question,
                         correctAnswers: question.correctAnswers.includes(option)
                           ? question.correctAnswers.filter(
-                            (ans) => ans !== option,
-                          )
-                        : [...question.correctAnswers, option],
-                    });
+                              (ans) => ans !== option,
+                            )
+                          : [...question.correctAnswers, option],
+                      });
+                    }
                   }}
                 >
                   Pažymėti kaip teisingą
@@ -519,7 +501,6 @@ function AddQuestionForm({ testId, toast, callback }) {
   const [bankPointsByQuestionId, setBankPointsByQuestionId] = useState({});
   const [bankFilters, setBankFilters] = useState({
     questionType: "",
-    questionCategoryClass: "",
     contentType: "",
     achievementArea: "",
   });
@@ -661,25 +642,6 @@ function AddQuestionForm({ testId, toast, callback }) {
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel>Klausimo kategorija</FormLabel>
-                <Select
-                  value={bankFilters.questionCategoryClass}
-                  onChange={(e) =>
-                    setBankFilters((prev) => ({
-                      ...prev,
-                      questionCategoryClass: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Visi</option>
-                  {QUESTION_CATEGORY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl>
                 <FormLabel>Turinio tipas</FormLabel>
                 <Select
                   value={bankFilters.contentType}
@@ -737,12 +699,7 @@ function AddQuestionForm({ testId, toast, callback }) {
                       Tipas: {getQuestionTypeLabel(bankQuestion.questionType)}
                     </Text>
                     <Text fontSize="sm">
-                      Kategorija:{" "}
-                      {formatEnumLabel(
-                        bankQuestion.questionCategoryClass,
-                        CATEGORY_LABELS,
-                      )}{" "}
-                      | Turinio tipas:{" "}
+                      Turinio tipas:{" "}
                       {formatEnumLabel(
                         bankQuestion.contentType,
                         CONTENT_TYPE_LABELS,
@@ -766,13 +723,13 @@ function AddQuestionForm({ testId, toast, callback }) {
                       </Box>
                     )}
                     {bankQuestion.textWithBlanks && (
-                        <Box marginTop={2}>
-                          <Text fontWeight="bold">
-                            Tekstas su tuščiais laukais:
-                          </Text>
-                          <Text>{bankQuestion.textWithBlanks}</Text>
-                        </Box>
-                      )}
+                      <Box marginTop={2}>
+                        <Text fontWeight="bold">
+                          Tekstas su tuščiais laukais:
+                        </Text>
+                        <Text>{bankQuestion.textWithBlanks}</Text>
+                      </Box>
+                    )}
                     {bankQuestion.correctAnswers?.length > 0 && (
                       <Box marginTop={2}>
                         <Text fontWeight="bold">Teisingi atsakymai:</Text>
