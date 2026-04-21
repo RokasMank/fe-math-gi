@@ -55,7 +55,9 @@ function QuestionView({ question, onRemove }) {
           )}
           {question.maxCharsAllowed ? (
             <Box marginTop={2}>
-              <Text fontWeight="bold">Maksimalus atsakymo simbolių skaičius</Text>
+              <Text fontWeight="bold">
+                Maksimalus atsakymo simbolių skaičius
+              </Text>
 
               <Text>{question.maxCharsAllowed}</Text>
             </Box>

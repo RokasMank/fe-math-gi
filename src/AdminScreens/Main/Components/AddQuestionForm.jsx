@@ -25,9 +25,8 @@ import { DEFAULT_QUESTION } from "../../../utils/defaultQuestion";
 import { buildQueryString } from "../../../utils/buildQueryString";
 
 const QUESTION_CATEGORY_OPTIONS = ["CatOne", "CatTwo", "CatThree"];
-const CONTENT_TYPE_OPTIONS = ["CotOne", "CotTwo", "CotThree"];
-const COGNITIVE_AREA_OPTIONS = ["CogOne", "CogTwo", "CogThree"];
-const ACHIEVEMENT_AREA_OPTIONS = ["AOne", "ATwo", "AThree"];
+const CONTENT_TYPE_OPTIONS = ["NumbersAndCalculations", "ModelsAndRelationships", "GeometryAndMeasurements", "DataAndProbability"];
+const ACHIEVEMENT_AREA_OPTIONS = ["KnowledgeUnderstandingArgumentation", "MathematicalCommunication", "ProblemSolving"];
 
 const QUESTION_TYPE_OPTIONS = [
   { value: "", label: "Visi" },
@@ -47,30 +46,23 @@ const CATEGORY_LABELS = {
 };
 
 const CONTENT_TYPE_LABELS = {
-  0: "CotOne",
-  1: "CotTwo",
-  2: "CotThree",
-  CotOne: "CotOne",
-  CotTwo: "CotTwo",
-  CotThree: "CotThree",
-};
-
-const COGNITIVE_AREA_LABELS = {
-  0: "CogOne",
-  1: "CogTwo",
-  2: "CogThree",
-  CogOne: "CogOne",
-  CogTwo: "CogTwo",
-  CogThree: "CogThree",
+  1: "Skaičiai ir skaičiavimai",
+  2: "Modeliai ir sąryšiai",
+  3: "Geometrija ir matavimai",
+  4: "Duomenys ir tikimybės",
+  NumbersAndCalculations: "Skaičiai ir skaičiavimai",
+  ModelsAndRelationships: "Modeliai ir sąryšiai",
+  GeometryAndMeasurements: "Geometrija ir matavimai",
+  DataAndProbability: "Duomenys ir tikimybės",
 };
 
 const ACHIEVEMENT_AREA_LABELS = {
-  0: "AOne",
-  1: "ATwo",
-  2: "AThree",
-  AOne: "AOne",
-  ATwo: "ATwo",
-  AThree: "AThree",
+  1: "Žinios, supratimas ir argumentavimas",
+  2: "Matematinis komunikavimas",
+  3: "Problemų sprendimas",
+  KnowledgeUnderstandingArgumentation: "Žinios, supratimas ir argumentavimas",
+  MathematicalCommunication: "Matematinis komunikavimas",
+  ProblemSolving: "Problemų sprendimas",
 };
 
 const QUESTION_TYPE_LABELS = {
@@ -150,11 +142,10 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
           imageUrl: "",
           subQuestions: [],
           allowsEmptyAnswer: false,
-          textWithBlanks: "", // Pridedame textWithBlanks
+          textWithBlanks: "",
           questionCategoryClass: "CatOne",
-          contentType: "CotOne",
-          cognitiveArea: "CogOne",
-          achievementArea: "AOne",
+          contentType: "NumbersAndCalculations",
+          achievementArea: "KnowledgeUnderstandingArgumentation",
         },
       ],
     });
@@ -308,21 +299,6 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
             ))}
           </Select>
         </FormControl>
-        <FormControl id="cognitiveArea" isRequired>
-          <FormLabel>Kognityvinė sritis</FormLabel>
-          <Select
-            value={question.cognitiveArea || "CogOne"}
-            onChange={(e) =>
-              setQuestion({ ...question, cognitiveArea: e.target.value })
-            }
-          >
-            {COGNITIVE_AREA_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
         <FormControl id="achievementArea" isRequired>
           <FormLabel>Pasiekimų sritis</FormLabel>
           <Select
@@ -429,11 +405,10 @@ function QuestionForm({ question, setQuestion, removeSubQuestion }) {
                         ...question,
                         correctAnswers: question.correctAnswers.includes(option)
                           ? question.correctAnswers.filter(
-                              (ans) => ans !== option,
-                            )
-                          : [...question.correctAnswers, option],
-                      });
-                    }
+                            (ans) => ans !== option,
+                          )
+                        : [...question.correctAnswers, option],
+                    });
                   }}
                 >
                   Pažymėti kaip teisingą
@@ -546,7 +521,6 @@ function AddQuestionForm({ testId, toast, callback }) {
     questionType: "",
     questionCategoryClass: "",
     contentType: "",
-    cognitiveArea: "",
     achievementArea: "",
   });
 
@@ -725,25 +699,6 @@ function AddQuestionForm({ testId, toast, callback }) {
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel>Kognityvinė sritis</FormLabel>
-                <Select
-                  value={bankFilters.cognitiveArea}
-                  onChange={(e) =>
-                    setBankFilters((prev) => ({
-                      ...prev,
-                      cognitiveArea: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Visi</option>
-                  {COGNITIVE_AREA_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl>
                 <FormLabel>Pasiekimų sritis</FormLabel>
                 <Select
                   value={bankFilters.achievementArea}
@@ -794,12 +749,7 @@ function AddQuestionForm({ testId, toast, callback }) {
                       )}
                     </Text>
                     <Text fontSize="sm">
-                      Kognityvinė sritis:{" "}
-                      {formatEnumLabel(
-                        bankQuestion.cognitiveArea,
-                        COGNITIVE_AREA_LABELS,
-                      )}{" "}
-                      | Pasiekimų sritis:{" "}
+                      Pasiekimų sritis:{" "}
                       {formatEnumLabel(
                         bankQuestion.achievementArea,
                         ACHIEVEMENT_AREA_LABELS,
@@ -815,8 +765,7 @@ function AddQuestionForm({ testId, toast, callback }) {
                         </VStack>
                       </Box>
                     )}
-                    {Number(bankQuestion.questionType) === 4 &&
-                      bankQuestion.textWithBlanks && (
+                    {bankQuestion.textWithBlanks && (
                         <Box marginTop={2}>
                           <Text fontWeight="bold">
                             Tekstas su tuščiais laukais:

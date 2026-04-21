@@ -18,8 +18,6 @@ export const DEFAULT_QUESTION = Object.freeze({
   maxCharsAllowed: null,
   textWithBlanks: "",
   questionCategoryClass: "CatOne",
-  contentType: "CotOne",
-  cognitiveArea: "CogOne",
-  achievementArea: "AOne",
+  contentType: "NumbersAndCalculations",
+  achievementArea: "KnowledgeUnderstandingArgumentation",
 });
-

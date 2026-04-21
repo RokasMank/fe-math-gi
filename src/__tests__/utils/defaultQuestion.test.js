@@ -14,9 +14,8 @@ describe("DEFAULT_QUESTION", () => {
       maxCharsAllowed: null,
       textWithBlanks: "",
       questionCategoryClass: "CatOne",
-      contentType: "CotOne",
-      cognitiveArea: "CogOne",
-      achievementArea: "AOne",
+      contentType: "NumbersAndCalculations",
+      achievementArea: "KnowledgeUnderstandingArgumentation",
     });
   });
 
@@ -33,4 +32,3 @@ describe("DEFAULT_QUESTION", () => {
     expect(copy2.text).toBe("");
   });
 });
-
